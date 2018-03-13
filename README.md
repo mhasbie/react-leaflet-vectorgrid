@@ -80,7 +80,7 @@ const options = {
 Option          | Type      | Default | Description
 --------------- | --------- | ------- | -------------
 `data`          | `Object`  | `{}`    | Required when using type `slicer`. A valid [GeoJSON FeatureCollection object](http://geojson.org/geojson-spec.html).
-`type`          | `String`  | `slicer`| Decides between using [VectoGrid.Slicer](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#vectorgrid-slicer) and [VectorGrid.Protobuf](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#vectorgrid-protobuf). Available options: `slicer`, `protobuf`.
+`type`          | `String`  | `'slicer'`| Decides between using [VectoGrid.Slicer](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#vectorgrid-slicer) and [VectorGrid.Protobuf](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#vectorgrid-protobuf). Available options: `slicer`, `protobuf`.
 `idField`       | `String`   | `''`   | A unique identifier field in the vector feature.
 `tooltip`       | `String` | `function`     | `undefined`   | Show tooltip on vector features. Set to feature properties name to use that properties value as tooltip. Or pass a function that will return a string. e.g. `function(feature) { return feature.properties.NAME; }`
 `popup`   | `Function`   | `undefined`    | Similar to `tooltip`, this props will be passed to leaflet `bindPopup` function to create popup for vector features.
@@ -122,7 +122,7 @@ const options = {
 
 Option          | Type      | Default | Description
 --------------- | --------- | ------- | -------------
-`type`          | `String`  | `slicer`| Decides between using [VectoGrid.Slicer](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#vectorgrid-slicer) and [VectorGrid.Protobuf](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#vectorgrid-protobuf). Available options: `slicer`, `protobuf`.
+`type`          | `String`  | `'slicer'`| Decides between using [VectoGrid.Slicer](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#vectorgrid-slicer) and [VectorGrid.Protobuf](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#vectorgrid-protobuf). Available options: `slicer`, `protobuf`.
 `url`           | `String`  | `''`    | Required when using type `protobuf`. Pass a url template that points to vector tiles (usually `.pbf` or `.mvt`).
 `subdomains`    | `String`  | `'abc'` | Akin to the `subdomains` option to `L.TileLayer`.
 `key`  			| `String`  | `''`    | Tile server access key.
