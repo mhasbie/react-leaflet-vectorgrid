@@ -39,12 +39,12 @@ import { Map, TileLayer } from 'react-leaflet';
 import VectorGrid from 'react-leaflet-vectorgrid';
 
 const options = {
-	type="slicer"
-	data={geojson}
-	idField="OBJECTID"
-	tooltip="NAME"
-	popup={(layer) => `<div>${layer.properties.NAME}</div>`}
-	style={{
+	type: 'slicer',
+	data: {geojson},
+	idField: 'OBJECTID',
+	tooltip: 'NAME',
+	popup: (layer) => `<div>${layer.properties.NAME}</div>`,
+	style: {
 		weight: 0.5,
 		opacity: 1,
 		color: '#ccc',
@@ -52,17 +52,16 @@ const options = {
 		fillOpacity: 0.6,
 		fill: true,
 		stroke: true
-	}}
-	hoverStyle={{
+	},
+	hoverStyle: {
 		fillColor: '#390870',
 		fillOpacity: 1
-	}}
-	activeStyle={{
+	},
+	activeStyle: {
 		fillColor: '#390870',
 		fillOpacity: 1
-	}}
-	zIndex={401}
-	onClick={this.onClick}
+	},
+	zIndex: 401
 };
 
 <Map center={[2.935403, 101.448205]} zoom={4}>
@@ -71,7 +70,7 @@ const options = {
     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
   />
 
-  <VectorGrid {...options} />
+  <VectorGrid {...options} onClick={this.onClick} />
 </Map>
 ```
 
@@ -101,10 +100,10 @@ import { Map, TileLayer } from 'react-leaflet';
 import VectorGrid from 'react-leaflet-vectorgrid';
 
 const options = {
-	type="protobuf"
-	url="https://free-{s}.tilehosting.com/data/v3/{z}/{x}/{y}.pbf.pict?key={key}"
-	vectorTileLayerStyles={{ ... }},
-    subdomains="abcd",
+	type: 'protobuf',
+	url: 'https://free-{s}.tilehosting.com/data/v3/{z}/{x}/{y}.pbf.pict?key={key}'
+	vectorTileLayerStyles: { ... },
+    subdomains: 'abcd',
     key: 'abcdefghi01234567890'
 };
 
