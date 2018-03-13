@@ -33,7 +33,7 @@ export default class VectorGrid extends MapLayer {
 			zIndex: zIndex || Number(layerContainer._panes[pane].style.zIndex),
 			getFeatureId: feature => this._getFeatureId(feature),
 			rendererFactory: L.svg.tile,
-			maxZoom: map.options.maxZoom || null,
+			maxZoom: map.getMaxZoom(),
 			vectorTileLayerStyles: vectorTileLayerStyles || {
 				sliced: (properties, zoom) => {
 					const bs = baseStyle(properties, zoom);
@@ -55,7 +55,7 @@ export default class VectorGrid extends MapLayer {
 				zIndex: zIndex || Number(layerContainer._panes[pane].style.zIndex),
 				getFeatureId: feature => this._getFeatureId(feature),
 				rendererFactory: L.svg.tile,
-				maxZoom: map.options.maxZoom || null
+				maxZoom: map.getMaxZoom()
 			});
 		}
 

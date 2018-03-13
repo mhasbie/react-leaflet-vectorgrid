@@ -166,7 +166,7 @@ return /******/ (function(modules) { // webpackBootstrap
 						return _this2._getFeatureId(feature);
 					},
 					rendererFactory: _leaflet2.default.svg.tile,
-					maxZoom: map.options.maxZoom || null,
+					maxZoom: map.getMaxZoom(),
 					vectorTileLayerStyles: vectorTileLayerStyles || {
 						sliced: function sliced(properties, zoom) {
 							var bs = baseStyle(properties, zoom);
@@ -190,7 +190,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							return _this2._getFeatureId(feature);
 						},
 						rendererFactory: _leaflet2.default.svg.tile,
-						maxZoom: map.options.maxZoom || null
+						maxZoom: map.getMaxZoom()
 					});
 				}
 
