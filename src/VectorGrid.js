@@ -189,6 +189,6 @@ export default class VectorGrid extends MapLayer {
 		const { data, idField } = this.props;
 		if (_.isEmpty(data)) return {};
 		const feature = _.find(data.features, ({ properties }) => properties[idField] === featureId);
-		return feature;
+		return _.cloneDeep(feature);
 	}
 }

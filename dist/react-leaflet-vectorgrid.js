@@ -344,7 +344,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					var properties = _ref.properties;
 					return properties[idField] === featureId;
 				});
-				return feature;
+				return _lodash2.default.cloneDeep(feature);
 			}
 		}]);
 
