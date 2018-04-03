@@ -1,5 +1,13 @@
 # react-leaflet-vectorgrid
 
+[![travis build](https://img.shields.io/travis/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://travis-ci.org/mhasbie/react-leaflet-vectorgrid)
+[![version](https://img.shields.io/npm/v/react-leaflet-vectorgrid.svg?style=plastic)](http://npm.im/react-leaflet-vectorgrid)
+[![MIT License](https://img.shields.io/npm/l/react-leaflet-vectorgrid.svg?style=plastic)](http://opensource.org/licenses/MIT)
+[![dependencies](https://img.shields.io/david/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://david-dm.org/mhasbie/react-leaflet-vectorgrid)
+[![peer dependencies](https://img.shields.io/david/peer/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://david-dm.org/mhasbie/react-leaflet-vectorgrid?type=peer)
+[![downloads](https://img.shields.io/npm/dt/react-leaflet-vectorgrid.svg?style=plastic)](http://npm-stat.com/charts.html?package=react-leaflet-vectorgrid&from=2018-01-01)
+[![issues](https://img.shields.io/github/issues/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://github.com/mhasbie/react-leaflet-vectorgrid/issues)
+
 React wrapper of [Leaflet.VectorGrid](https://github.com/Leaflet/Leaflet.VectorGrid)
 for [react-leaflet](https://github.com/PaulLeCam/react-leaflet).
 
