@@ -158,7 +158,7 @@ export default class VectorGrid extends MapLayer {
 		if (!_.isFunction(eventHandler)) return;
 		const featureId = this._getFeatureId(e.layer);
 		const feature = this.getFeature(featureId);
-		const event = _.clone(e);
+		const event = _.cloneDeep(e);
 		const mergedEvent = _.merge(event.target, { feature });
 		eventHandler(event);
 	}

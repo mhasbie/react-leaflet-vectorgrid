@@ -302,7 +302,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				if (!_lodash2.default.isFunction(eventHandler)) return;
 				var featureId = this._getFeatureId(e.layer);
 				var feature = this.getFeature(featureId);
-				var event = _lodash2.default.clone(e);
+				var event = _lodash2.default.cloneDeep(e);
 				var mergedEvent = _lodash2.default.merge(event.target, { feature: feature });
 				eventHandler(event);
 			}
