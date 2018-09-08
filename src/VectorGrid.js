@@ -6,7 +6,7 @@ import _ from 'lodash';
 export default class VectorGrid extends MapLayer {
 	createLeafletElement(props) {
 		const { map, pane, layerContainer } = this.context;
-		const { data, zIndex, type = 'slicer', style, hoverStyle, activeStyle, onClick, onMouseover, onMouseout, onDblclick, interactive = true, vectorTileLayerStyles, url, maxNativeZoom, subdomains, key, token } = props;
+		const { data, zIndex, type = 'slicer', style, hoverStyle, activeStyle, onClick, onMouseover, onMouseout, onDblclick, interactive = true, vectorTileLayerStyles, url, maxNativeZoom, maxZoom, minZoom, subdomains, key, token } = props;
 
 		// get feature base styling
 		const baseStyle = (properties, zoom) => {
@@ -33,7 +33,8 @@ export default class VectorGrid extends MapLayer {
 			zIndex: zIndex || Number(layerContainer._panes[pane].style.zIndex),
 			getFeatureId: feature => this._getFeatureId(feature),
 			rendererFactory: L.svg.tile,
-			maxZoom: map.getMaxZoom(),
+			maxZoom: maxZoom || map.getMaxZoom(),
+			minZoom: minZoom || map.getMinZoom(),
 			vectorTileLayerStyles: vectorTileLayerStyles || {
 				sliced: (properties, zoom) => {
 					const bs = baseStyle(properties, zoom);
@@ -55,7 +56,8 @@ export default class VectorGrid extends MapLayer {
 				zIndex: zIndex || Number(layerContainer._panes[pane].style.zIndex),
 				getFeatureId: feature => this._getFeatureId(feature),
 				rendererFactory: L.svg.tile,
-				maxZoom: map.getMaxZoom()
+				maxZoom: maxZoom || map.getMaxZoom(),
+				minZoom: minZoom || map.getMinZoom()
 			});
 		}
 
