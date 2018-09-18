@@ -5,7 +5,7 @@ import _ from 'lodash';
 
 export default class VectorGrid extends MapLayer {
 	createLeafletElement(props) {
-		const { map, pane, layerContainer } = this.context;
+		const { map, pane, layerContainer } = props.leaflet || this.context;
 		const { data, zIndex, type = 'slicer', style, hoverStyle, activeStyle, onClick, onMouseover, onMouseout, onDblclick, interactive = true, vectorTileLayerStyles, url, maxNativeZoom, maxZoom, minZoom, subdomains, key, token } = props;
 
 		// get feature base styling
@@ -114,7 +114,7 @@ export default class VectorGrid extends MapLayer {
 	}
 
 	componentDidMount() {
-		const { layerContainer } = this.context;
+		const { layerContainer } = this.props.leaflet || this.context;
 		const { tooltipClassName = '', tooltip = null, popup = null } = this.props;
 		this.leafletElement.addTo(layerContainer);
 		// bind tooltip

@@ -114,10 +114,11 @@ return /******/ (function(modules) { // webpackBootstrap
 			value: function createLeafletElement(props) {
 				var _this2 = this;
 
-				var _context = this.context,
-				    map = _context.map,
-				    pane = _context.pane,
-				    layerContainer = _context.layerContainer;
+				var _ref = props.leaflet || this.context,
+				    map = _ref.map,
+				    pane = _ref.pane,
+				    layerContainer = _ref.layerContainer;
+
 				var data = props.data,
 				    zIndex = props.zIndex,
 				    _props$type = props.type,
@@ -246,7 +247,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		}, {
 			key: 'componentDidMount',
 			value: function componentDidMount() {
-				var layerContainer = this.context.layerContainer;
+				var _ref2 = this.props.leaflet || this.context,
+				    layerContainer = _ref2.layerContainer;
+
 				var _props = this.props,
 				    _props$tooltipClassNa = _props.tooltipClassName,
 				    tooltipClassName = _props$tooltipClassNa === undefined ? '' : _props$tooltipClassNa,
@@ -340,8 +343,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				    idField = _props2.idField;
 
 				if (_lodash2.default.isEmpty(data)) return {};
-				var feature = _lodash2.default.find(data.features, function (_ref) {
-					var properties = _ref.properties;
+				var feature = _lodash2.default.find(data.features, function (_ref3) {
+					var properties = _ref3.properties;
 					return properties[idField] === featureId;
 				});
 				return _lodash2.default.cloneDeep(feature);
