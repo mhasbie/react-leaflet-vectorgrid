@@ -136,8 +136,18 @@ Option          | Type      | Default | Description
 `token`  		| `String`  | `''`    | Tile server access token.
 `vectorTileLayerStyles`   | `Object`  	 | `undefined`    | A data structure holding initial symbolizer definitions for the vector features. Refer [Leaflet.VectorGrid doc](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#styling-vectorgrids) for more info.
 
+### Usage with React-Leaflet v2
 
+This is compatible with version 2 of React-Leaflet, but you have to wrap the `VectorGrid` using the [`withLeaflet` higher-order component](https://react-leaflet.js.org/docs/en/context.html) to give it access to the new context mechanism. For example:
 
+```javascript
+import { Map, withLeaflet } from 'react-leaflet';
+import VectorGrid from 'react-leaflet-vectorgrid';
+
+const WrappedVectorGrid = withLeaflet(VectorGrid);
+
+// Use <WrappedVectorGrid> where you would have used <VectorGrid>.
+```
 
 # Credits
 Credits goes to all the [contributors](https://github.com/Leaflet/Leaflet.VectorGrid/graphs/contributors) for the original work.
