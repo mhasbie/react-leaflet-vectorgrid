@@ -20,7 +20,7 @@ Display gridded vector data (sliced [GeoJSON](http://geojson.org/), [TopoJSON](h
 | Version	| Demo	| Description			|
 | ---		| ---	| ---					|
 | react-leaflet@1.9.1| [`JSFiddle`](https://jsfiddle.net/m_hasbie/rnx44us3/), [`CodePen`](https://codepen.io/m_hasbie/full/jzpbwj/) | Sliced GeoJSON |
-| react-leaflet@2.0.1| [`CodePen`](https://codepen.io/m_hasbie/full/jvgyPq/) | Sliced GeoJSON |
+| react-leaflet@2.0.1| [`JSFiddle`](http://jsfiddle.net/m_hasbie/Lkp96dj3/), [`CodePen`](https://codepen.io/m_hasbie/full/jvgyPq/) | Sliced GeoJSON |
 
 
 
