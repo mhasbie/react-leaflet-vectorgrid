@@ -4,8 +4,7 @@ module.exports = {
     library: 'ReactLeafletVectorGrid',
     libraryTarget: 'umd'
   },
-  externals: [
-    {
+  externals: [{
       leaflet: {
         amd: 'leaflet',
         commonjs: 'leaflet',
@@ -18,7 +17,7 @@ module.exports = {
         amd: 'react-leaflet',
         commonjs: 'react-leaflet',
         commonjs2: 'react-leaflet',
-		root: 'ReactLeaflet'
+        root: 'ReactLeaflet'
       }
     },
     {
@@ -31,10 +30,16 @@ module.exports = {
     },
   ],
   module: {
-    loaders: [
-      { test: /\.js$/, exclude: /node_modules/, loader: 'babel' },
-	  { test: /\.css$/, exclude: /node_modules/, loader: 'style-loader!css-loader'}
+    loaders: [{
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'babel'
+      },
+      {
+        test: /\.css$/,
+        exclude: /node_modules/,
+        loader: 'style-loader!css-loader'
+      }
     ]
   }
 };
-
