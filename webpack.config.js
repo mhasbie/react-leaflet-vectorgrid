@@ -14,14 +14,6 @@ module.exports = {
       }
     },
     {
-      jquery: {
-        amd: 'jquery',
-        commonjs: 'jquery',
-        commonjs2: 'jquery',
-         root: 'JQuery'
-      }
-    },
-    {
       'react-leaflet': {
         amd: 'react-leaflet',
         commonjs: 'react-leaflet',

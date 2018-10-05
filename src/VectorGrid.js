@@ -1,12 +1,38 @@
-import { MapLayer } from 'react-leaflet';
+import {
+	MapLayer
+} from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet.vectorgrid';
 import _ from 'lodash';
 
 export default class VectorGrid extends MapLayer {
 	createLeafletElement(props) {
-		const { map, pane, layerContainer } = props.leaflet || this.context;
-		const { data, zIndex, type = 'slicer', style, hoverStyle, activeStyle, onClick, onMouseover, onMouseout, onDblclick, interactive = true, vectorTileLayerStyles, url, maxNativeZoom, maxZoom, minZoom, subdomains, key, token } = props;
+		const {
+			map,
+			pane,
+			layerContainer
+		} = props.leaflet || this.context;
+		const {
+			data,
+			zIndex,
+			type = 'slicer',
+			style,
+			hoverStyle,
+			activeStyle,
+			onClick,
+			onMouseover,
+			onMouseout,
+			onDblclick,
+			interactive = true,
+			vectorTileLayerStyles,
+			url,
+			maxNativeZoom,
+			maxZoom,
+			minZoom,
+			subdomains,
+			key,
+			token
+		} = props;
 
 		// get feature base styling
 		const baseStyle = (properties, zoom) => {
@@ -28,22 +54,8 @@ export default class VectorGrid extends MapLayer {
 		this.highlight = null;
 		this.active = null;
 
-		let vectorGrid = L.vectorGrid.slicer(data, {
-			interactive,
-			zIndex: zIndex || Number(layerContainer._panes[pane].style.zIndex),
-			getFeatureId: feature => this._getFeatureId(feature),
-			rendererFactory: L.svg.tile,
-			maxZoom: maxZoom || map.getMaxZoom(),
-			minZoom: minZoom || map.getMinZoom(),
-			vectorTileLayerStyles: vectorTileLayerStyles || {
-				sliced: (properties, zoom) => {
-					const bs = baseStyle(properties, zoom);
-					bs.fill = true;
-					bs.stroke = true;
-					return bs;
-				}
-			}
-		});
+		let vectorGrid;
+
 		if (type === 'protobuf') {
 			vectorGrid = L.vectorGrid.protobuf(url, {
 				vectorTileLayerStyles,
@@ -53,17 +65,36 @@ export default class VectorGrid extends MapLayer {
 				subdomains,
 				key,
 				token,
-				zIndex: zIndex || Number(layerContainer._panes[pane].style.zIndex),
+				zIndex: zIndex || Number(layerContainer._panes[pane] && layerContainer._panes[pane].style.zIndex),
 				getFeatureId: feature => this._getFeatureId(feature),
 				rendererFactory: L.svg.tile,
 				maxZoom: maxZoom || map.getMaxZoom(),
 				minZoom: minZoom || map.getMinZoom()
 			});
+		} else {
+			vectorGrid = L.vectorGrid.slicer(data, {
+				interactive,
+				zIndex: zIndex || Number(layerContainer._panes[pane] && layerContainer._panes[pane].style.zIndex),
+				getFeatureId: feature => this._getFeatureId(feature),
+				rendererFactory: L.canvas.tile,
+				maxZoom: maxZoom || map.getMaxZoom(),
+				minZoom: minZoom || map.getMinZoom(),
+				vectorTileLayerStyles: vectorTileLayerStyles || {
+					sliced: (properties, zoom) => {
+						const bs = baseStyle(properties, zoom);
+						bs.fill = true;
+						bs.stroke = true;
+						return bs;
+					}
+				}
+			});
 		}
 
 		return vectorGrid
 			.on('mouseover', (e) => {
-				const { properties } = e.layer;
+				const {
+					properties
+				} = e.layer;
 				this._propagateEvent(onMouseover, e);
 
 				// on mouseover styling
@@ -87,7 +118,9 @@ export default class VectorGrid extends MapLayer {
 				this.clearHighlight();
 			})
 			.on('click', (e) => {
-				const { properties } = e.layer;
+				const {
+					properties
+				} = e.layer;
 				const featureId = this._getFeatureId(e.layer);
 
 				this._propagateEvent(onClick, e);
@@ -114,8 +147,12 @@ export default class VectorGrid extends MapLayer {
 	}
 
 	componentDidMount() {
-		const { layerContainer } = this.props.leaflet || this.context;
-		const { tooltipClassName = '', tooltip = null, popup = null } = this.props;
+		const {
+			layerContainer
+		} = this.props.leaflet || this.context;
+		const {
+			tooltipClassName = '', tooltip = null, popup = null
+		} = this.props;
 		this.leafletElement.addTo(layerContainer);
 		// bind tooltip
 		if (tooltip) {
@@ -148,7 +185,9 @@ export default class VectorGrid extends MapLayer {
 	}
 
 	_getFeatureId(feature) {
-		const { idField } = this.props;
+		const {
+			idField
+		} = this.props;
 		if (_.isFunction(idField)) {
 			return idField(feature);
 		} else if (_.isString(idField)) {
@@ -161,7 +200,9 @@ export default class VectorGrid extends MapLayer {
 		const featureId = this._getFeatureId(e.layer);
 		const feature = this.getFeature(featureId);
 		const event = _.cloneDeep(e);
-		const mergedEvent = _.merge(event.target, { feature });
+		const mergedEvent = _.merge(event.target, {
+			feature
+		});
 		eventHandler(event);
 	}
 
@@ -188,9 +229,14 @@ export default class VectorGrid extends MapLayer {
 	}
 
 	getFeature(featureId) {
-		const { data, idField } = this.props;
+		const {
+			data,
+			idField
+		} = this.props;
 		if (_.isEmpty(data)) return {};
-		const feature = _.find(data.features, ({ properties }) => properties[idField] === featureId);
+		const feature = _.find(data.features, ({
+			properties
+		}) => properties[idField] === featureId);
 		return _.cloneDeep(feature);
 	}
 }
