@@ -13,13 +13,14 @@ for [react-leaflet](https://github.com/PaulLeCam/react-leaflet).
 
 Display gridded vector data (sliced [GeoJSON](http://geojson.org/), [TopoJSON](https://github.com/mbostock/topojson/wiki) or [protobuf vector tiles](https://github.com/mapbox/vector-tile-spec)) in [Leaflet](http://www.leafletjs.com) 1.0.0
 
-*Tested with Leaflet 1.3.1 and React-Leaflet 1.8.0*
+*Tested with Leaflet 1.3.4 and React-Leaflet 1.9.1, React-Leaflet 2.0.1*
 
 ## Demos
 
-| Demo		| Description			|
-| ---		| ---					|
-| [`JSFiddle`](https://jsfiddle.net/m_hasbie/rnx44us3/) | Sliced GeoJSON |
+| Version	| Demo	| Description			|
+| ---		| ---	| ---					|
+| react-leaflet@1.9.1| [`JSFiddle`](https://jsfiddle.net/m_hasbie/rnx44us3/), [`CodePen`](https://codepen.io/m_hasbie/full/jzpbwj/) | Sliced GeoJSON |
+| react-leaflet@2.0.1| [`JSFiddle`](http://jsfiddle.net/m_hasbie/Lkp96dj3/), [`CodePen`](https://codepen.io/m_hasbie/full/jvgyPq/) | Sliced GeoJSON |
 
 
 
