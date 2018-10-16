@@ -76,7 +76,7 @@ export default class VectorGrid extends MapLayer {
 				interactive,
 				zIndex: zIndex || Number(layerContainer._panes[pane] && layerContainer._panes[pane].style.zIndex),
 				getFeatureId: feature => this._getFeatureId(feature),
-				rendererFactory: L.canvas.tile,
+				rendererFactory: L.svg.tile,
 				maxZoom: maxZoom || map.getMaxZoom(),
 				minZoom: minZoom || map.getMinZoom(),
 				vectorTileLayerStyles: vectorTileLayerStyles || {
