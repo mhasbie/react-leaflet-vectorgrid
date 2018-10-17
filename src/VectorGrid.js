@@ -225,7 +225,7 @@ export default class VectorGrid extends MapLayer {
 				if (isFunction(tooltip)) {
 					return tooltip(layer);
 				} else if (isString(tooltip) && has(layer.properties, tooltip)) {
-					return layer.properties[tooltip];
+					return String(layer.properties[tooltip]);
 				} else if (isString(tooltip)) {
 					return tooltip;
 				}
