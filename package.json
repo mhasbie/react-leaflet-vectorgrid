@@ -1,6 +1,6 @@
 {
     "name": "react-leaflet-vectorgrid",
-    "version": "2.1.2",
+    "version": "2.1.3",
     "description": "React wrapper of Leaflet.VectorGrid. Display gridded vector data (sliced GeoJSON, TopoJSON or protobuf vector tiles).",
     "main": "dist/react-leaflet-vectorgrid.min.js",
     "scripts": {
@@ -39,6 +39,7 @@
         "babel-core": "^6.8.0",
         "babel-eslint": "^7.0.0",
         "babel-loader": "^6.2.4",
+        "babel-plugin-transform-object-rest-spread": "^6.26.0",
         "babel-preset-env": "^1.6.1",
         "babel-preset-react": "^6.0.15",
         "babel-preset-stage-0": "^6.1.18",

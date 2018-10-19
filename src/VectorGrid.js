@@ -96,7 +96,8 @@ export default class VectorGrid extends MapLayer {
 			minZoom,
 			subdomains,
 			key,
-			token
+			token,
+			...rest
 		} = props;
 
 		// get feature base styling
@@ -134,7 +135,9 @@ export default class VectorGrid extends MapLayer {
 				getFeatureId: feature => this._getFeatureId(feature),
 				rendererFactory: L.svg.tile,
 				maxZoom: maxZoom || map.getMaxZoom(),
-				minZoom: minZoom || map.getMinZoom()
+				minZoom: minZoom || map.getMinZoom(),
+				// pass through other props so we can change lower level options of VectorGrid
+				...rest
 			});
 		} else {
 			vectorGrid = L.vectorGrid.slicer(data, {
@@ -151,7 +154,9 @@ export default class VectorGrid extends MapLayer {
 						bs.stroke = true;
 						return bs;
 					}
-				}
+				},
+				// pass through other props so we can change lower level options of VectorGrid
+				...rest
 			});
 		}
 
