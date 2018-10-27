@@ -151,7 +151,7 @@ const WrappedVectorGrid = withLeaflet(VectorGrid);
 ```
 
 # Credits
-Credits goes to all the [contributors](https://github.com/Leaflet/Leaflet.VectorGrid/graphs/contributors) for the original work.
+Credits goes to all the [contributors of the original work](https://github.com/Leaflet/Leaflet.VectorGrid/graphs/contributors) and [everyone who contributed to this project](https://github.com/mhasbie/react-leaflet-vectorgrid/graphs/contributors).
 
 # License
 
