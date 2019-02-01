@@ -1,17 +1,20 @@
-import {
-	MapLayer
-} from 'react-leaflet';
-import L, { Popup } from 'leaflet';
+import { MapLayer } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet.vectorgrid';
-
-import DebugFactory from 'debug';
-
-const debug = DebugFactory('react-leaflet-vectorgrid');
+import isObject from 'lodash/isObject';
+import isFunction from 'lodash/isFunction';
+import isString from 'lodash/isString';
+import isEmpty from 'lodash/isEmpty';
+import clone from 'lodash/clone';
+import cloneDeep from 'lodash/cloneDeep';
+import extend from 'lodash/extend';
+import merge from 'lodash/merge';
+import has from 'lodash/has';
+import find from 'lodash/find';
 
 function patchVectorGridLayer(obj) {
 	// Fix error for point data.
 	// eg. mouseover does not work without this.
-	debug('patch before', { obj });
 	obj._createLayer_orig = obj._createLayer;
 	obj._createLayer = function (feat, pxPerExtent, layerStyle) {
 		let layer = this._createLayer_orig(feat, pxPerExtent, layerStyle);
@@ -22,52 +25,7 @@ function patchVectorGridLayer(obj) {
 	};
 
 	// do this for chaining
-	debug('patch after', { obj });
 	return obj;
-}
-
-function isObject(x) {
-	return x === Object(x);
-}
-
-function isFunction(x) {
-	return typeof x === 'function';
-}
-
-function isString(x) {
-	return typeof x === 'string' || x instanceof String;
-}
-
-function isEmpty(x) {
-	return x && x.length === 0;
-}
-
-function cloneDeep(x) {
-	return JSON.parse(JSON.stringify(obj));
-}
-
-function extend(a, b) {
-	return Object.assign(a, b);
-}
-
-function clone(x) {
-	return Object.assign({}, x);
-}
-
-function has(obj, path) {
-	// guard.
-	debug('has', { obj, path });
-	if (!isString(path)) return false;
-
-	var keys = path.split('.');
-
-	for (var i = 0; i < keys.length; i++) {
-		if (!obj || !obj.hasOwnProperty(keys[i])) {
-			return false;
-		}
-		obj = obj[keys[i]];
-	}
-	return true;
 }
 
 export default class VectorGrid extends MapLayer {
@@ -80,7 +38,6 @@ export default class VectorGrid extends MapLayer {
 		const {
 			data,
 			zIndex,
-			type = 'slicer',
 			style,
 			hoverStyle,
 			activeStyle,
@@ -88,17 +45,23 @@ export default class VectorGrid extends MapLayer {
 			onMouseover,
 			onMouseout,
 			onDblclick,
-			interactive = true,
+			onContextmenu,
 			vectorTileLayerStyles,
 			url,
 			maxNativeZoom,
 			maxZoom,
 			minZoom,
 			subdomains,
-			key,
-			token,
+			accessKey,
+			accessToken,
+			type = 'slicer',
+			interactive = true,
 			...rest
 		} = props;
+		
+		// `leaflet` prop is being passed down by withLeaflet() HOC wrapper in react-leaflet v2
+		// It caused the plugin to break. We don't need to pass it down to L.vectorgrid
+		delete(rest.leaflet);
 
 		// get feature base styling
 		const baseStyle = (properties, zoom) => {
@@ -129,8 +92,8 @@ export default class VectorGrid extends MapLayer {
 				url,
 				maxNativeZoom,
 				subdomains,
-				key,
-				token,
+				key: accessKey,
+				token: accessToken,
 				zIndex: zIndex || Number(layerContainer._panes[pane] && layerContainer._panes[pane].style.zIndex),
 				getFeatureId: feature => this._getFeatureId(feature),
 				rendererFactory: L.svg.tile,
@@ -173,12 +136,12 @@ export default class VectorGrid extends MapLayer {
 				if (isFunction(hoverStyle)) {
 					st = hoverStyle(properties);
 				} else if (isObject(hoverStyle)) {
-					st = clone(hoverStyle);
+					st = cloneDeep(hoverStyle);
 				}
 				if (!isEmpty(st) && featureId) {
 					this.clearHighlight();
 					this.highlight = featureId;
-					const base = clone(baseStyle(properties));
+					const base = cloneDeep(baseStyle(properties));
 					const hover = extend(base, st);
 					this.setFeatureStyle(featureId, hover);
 				}
@@ -200,18 +163,22 @@ export default class VectorGrid extends MapLayer {
 				if (isFunction(activeStyle)) {
 					st = activeStyle(properties);
 				} else if (isObject(activeStyle)) {
-					st = clone(activeStyle);
+					st = cloneDeep(activeStyle);
 				}
 				if (!isEmpty(st) && featureId) {
 					this.clearActive();
 					this.active = featureId;
-					const base = clone(baseStyle(properties));
+					const base = cloneDeep(baseStyle(properties));
 					const active = extend(base, st);
 					this.setFeatureStyle(featureId, active);
 				}
 			})
 			.on('dblclick', (e) => {
 				this._propagateEvent(onDblclick, e);
+				this.clearActive();
+			})
+			.on('contextmenu', (e) => {
+				this._propagateEvent(onContextmenu, e);
 				this.clearActive();
 			});
 	}
@@ -221,7 +188,9 @@ export default class VectorGrid extends MapLayer {
 			layerContainer
 		} = this.props.leaflet || this.context;
 		const {
-			tooltipClassName = '', tooltip = null, popup = null
+			tooltipClassName = '',
+			tooltip = null,
+			popup = null
 		} = this.props;
 		this.leafletElement.addTo(layerContainer);
 		// bind tooltip
@@ -247,8 +216,6 @@ export default class VectorGrid extends MapLayer {
 		if (popup) {
 			// create a popup and bind it?
 			// const newPopup = L.popup().setContent(popup);
-			// debug('type of popup', newPopup instanceof Popup);
-			debug('popup', { popup });
 			this.leafletElement.bindPopup(popup);
 		}
 	}
@@ -302,7 +269,7 @@ export default class VectorGrid extends MapLayer {
 			data,
 			idField
 		} = this.props;
-		if (isEmpty(data)) return {};
+		if (isEmpty(data) || isEmpty(data.features)) return {};
 		const feature = find(data.features, ({
 			properties
 		}) => properties[idField] === featureId);

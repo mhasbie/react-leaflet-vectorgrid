@@ -1,0 +1,91 @@
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>react-leaflet-vectorgrid Slicer Example for react-leaflet v1</title>
+		<meta name="description" content="https://github.com/mhasbie/react-leaflet-vectorgrid">
+
+		<link href="https://fonts.googleapis.com/css?family=Lato:300,400,400italic,700,700italic" rel="stylesheet">
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.css" rel="stylesheet">
+		<style>
+			.leaflet-container {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				left: 0;
+				right: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container"></div>
+  
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.23.1/babel.js"></script>
+		<script src="https://unpkg.com/react@16.5.2/umd/react.production.min.js"></script>
+		<script src="https://unpkg.com/react-dom@16.5.2/umd/react-dom.production.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet-src.js"></script>
+		<script src="https://unpkg.com/react-leaflet@1.9.1/dist/react-leaflet.js"></script>
+		<script src="../dist/react-leaflet-vectorgrid.min.js"></script>
+		<script src="./data.js"></script>
+		<script type="text/babel">
+			const { Map, TileLayer } = ReactLeaflet;
+			const VectorGrid = ReactLeafletVectorGrid;
+
+			class SimpleExample extends React.Component {
+				constructor() {
+					super();
+					this.onClick = this.onClick.bind(this);
+					this.state = {
+						center: [2.935403, 101.448205],
+						zoom: 3,
+						minZoom: 1,
+						maxZoom: 22,
+					}
+				}
+				
+				onClick(e) {
+					const feature = e.target.feature;
+					console.log('clicked', feature.properties);
+				}
+
+				render() {
+					const options = {
+						data,
+						type: 'slicer',
+						idField: 'name',
+						tooltip: 'name',
+						popup: (layer) => `<div>${layer.properties.name}</div>`,
+						style: {
+							weight: 0.5,
+							opacity: 1,
+							color: '#ccc',
+							fillColor: '#390870',
+							fillOpacity: 0.6,
+							fill: true,
+							stroke: true
+						},
+						hoverStyle: {
+							fillColor: '#390870',
+							fillOpacity: 1
+						},
+						activeStyle: {
+							fillColor: '#390870',
+							fillOpacity: 1
+						},
+						zIndex: 401
+					};
+					return (
+						<Map {...this.state}>
+							<TileLayer
+								attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+								url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+							/>
+							<VectorGrid {...options} onClick={this.onClick} />
+						</Map>
+					);
+				}
+			}
+
+			ReactDOM.render(<SimpleExample />, document.getElementById('container'))
+		</script>
+	</body>
+</html>

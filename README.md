@@ -1,26 +1,28 @@
 # react-leaflet-vectorgrid
 
-[![travis build](https://img.shields.io/travis/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://travis-ci.org/mhasbie/react-leaflet-vectorgrid)
 [![version](https://img.shields.io/npm/v/react-leaflet-vectorgrid.svg?style=plastic)](http://npm.im/react-leaflet-vectorgrid)
-[![MIT License](https://img.shields.io/npm/l/react-leaflet-vectorgrid.svg?style=plastic)](http://opensource.org/licenses/MIT)
+[![react-leaflet compatibility](https://img.shields.io/npm/dependency-version/react-leaflet-vectorgrid/peer/react-leaflet.svg?style=plastic)](https://github.com/mhasbie/react-leaflet-vectorgrid)
+[![travis build](https://img.shields.io/travis/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://travis-ci.org/mhasbie/react-leaflet-vectorgrid)
 [![dependencies](https://img.shields.io/david/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://david-dm.org/mhasbie/react-leaflet-vectorgrid)
 [![peer dependencies](https://img.shields.io/david/peer/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://david-dm.org/mhasbie/react-leaflet-vectorgrid?type=peer)
-[![downloads](https://img.shields.io/npm/dt/react-leaflet-vectorgrid.svg?style=plastic)](http://npm-stat.com/charts.html?package=react-leaflet-vectorgrid&from=2018-01-01)
 [![issues](https://img.shields.io/github/issues/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://github.com/mhasbie/react-leaflet-vectorgrid/issues)
+[![downloads](https://img.shields.io/npm/dt/react-leaflet-vectorgrid.svg?style=plastic)](http://npm-stat.com/charts.html?package=react-leaflet-vectorgrid&from=2018-01-01)
+[![MIT License](https://img.shields.io/npm/l/react-leaflet-vectorgrid.svg?style=plastic)](http://opensource.org/licenses/MIT)
+
 
 React wrapper of [Leaflet.VectorGrid](https://github.com/Leaflet/Leaflet.VectorGrid)
 for [react-leaflet](https://github.com/PaulLeCam/react-leaflet).
 
 Display gridded vector data (sliced [GeoJSON](http://geojson.org/), [TopoJSON](https://github.com/mbostock/topojson/wiki) or [protobuf vector tiles](https://github.com/mapbox/vector-tile-spec)) in [Leaflet](http://www.leafletjs.com) 1.0.0
 
-*Tested with Leaflet 1.3.4 and React-Leaflet 1.9.1, React-Leaflet 2.0.1*
+*Tested with Leaflet 1.3.4 and React-Leaflet 1.9.1, React-Leaflet 2.1.4*
 
 ## Demos
 
 | Version	| Demo	| Description			|
 | ---		| ---	| ---					|
-| react-leaflet@1.9.1| [`JSFiddle`](https://jsfiddle.net/m_hasbie/rnx44us3/), [`CodePen`](https://codepen.io/m_hasbie/full/jzpbwj/) | Sliced GeoJSON |
-| react-leaflet@2.0.1| [`JSFiddle`](http://jsfiddle.net/m_hasbie/Lkp96dj3/), [`CodePen`](https://codepen.io/m_hasbie/full/jvgyPq/) | Sliced GeoJSON |
+| react-leaflet@1.9.1 | [`JSFiddle`](https://jsfiddle.net/m_hasbie/rnx44us3/), [`CodePen`](https://codepen.io/m_hasbie/full/jzpbwj/) | Sliced GeoJSON |
+| react-leaflet@2.1.4 | [`JSFiddle`](http://jsfiddle.net/m_hasbie/Lkp96dj3/), [`CodePen`](https://codepen.io/m_hasbie/full/jvgyPq/) | Sliced GeoJSON |
 
 
 
@@ -143,11 +145,13 @@ This is compatible with version 2 of React-Leaflet, but you have to wrap the `Ve
 
 ```javascript
 import { Map, withLeaflet } from 'react-leaflet';
-import VectorGrid from 'react-leaflet-vectorgrid';
+import VectorGridDefault from 'react-leaflet-vectorgrid';
 
-const WrappedVectorGrid = withLeaflet(VectorGrid);
+// wrap the VectorGrid component using `withLeaflet` HOC
+const VectorGrid = withLeaflet(VectorGridDefault);
 
-// Use <WrappedVectorGrid> where you would have used <VectorGrid>.
+// use <VectorGrid /> component as you would use it in react-leaflet v1
+
 ```
 
 # Credits
