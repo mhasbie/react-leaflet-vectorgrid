@@ -135,8 +135,8 @@ Option          | Type      | Default | Description
 `type`          | `String`  | `'slicer'`| Decides between using [VectoGrid.Slicer](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#vectorgrid-slicer) and [VectorGrid.Protobuf](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#vectorgrid-protobuf). Available options: `slicer`, `protobuf`.
 `url`           | `String`  | `''`    | Required when using type `protobuf`. Pass a url template that points to vector tiles (usually `.pbf` or `.mvt`).
 `subdomains`    | `String`  | `'abc'` | Akin to the `subdomains` option to `L.TileLayer`.
-`key`  			| `String`  | `''`    | Tile server access key.
-`token`  		| `String`  | `''`    | Tile server access token.
+`accessKey`  			| `String`  | `''`    | Tile server access key.
+`accessToken`  		| `String`  | `''`    | Tile server access token.
 `vectorTileLayerStyles`   | `Object`  	 | `undefined`    | A data structure holding initial symbolizer definitions for the vector features. Refer [Leaflet.VectorGrid doc](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#styling-vectorgrids) for more info.
 
 ### Usage with React-Leaflet v2
