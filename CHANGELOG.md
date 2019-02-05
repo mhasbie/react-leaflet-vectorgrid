@@ -1,4 +1,4 @@
-react-leaflet-d3 Changelog
+react-leaflet-vectorgrid Changelog
 =========================
 
 
