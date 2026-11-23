@@ -29,6 +29,15 @@ function isDeepEqual(left, right) {
 	return false;
 }
 
+function assertProtobufSupport() {
+	if (!L.vectorGrid || typeof L.vectorGrid.protobuf !== 'function') {
+		throw new Error(
+			'react-leaflet-vectorgrid could not initialize the protobuf layer. ' +
+			'Ensure leaflet and leaflet.vectorgrid resolve to the same Leaflet installation.'
+		);
+	}
+}
+
 function patchVectorGridLayer(layer) {
 	const originalCreateLayer = layer._createLayer;
 	layer._createLayer = function (feature, pxPerExtent, layerStyle) {
@@ -207,6 +216,7 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 
 		let layer;
 		if (type === 'protobuf') {
+			assertProtobufSupport();
 			layer = L.vectorGrid.protobuf(url, {
 				vectorTileLayerStyles,
 				interactive,

@@ -109,6 +109,26 @@ describe('VectorGrid', () => {
 		);
 	});
 
+	it('reports when the protobuf plugin is not registered', () => {
+		const vectorGrid = L.vectorGrid;
+		L.vectorGrid = undefined;
+
+		try {
+			expect(() => render(
+				<MapContainer {...mapOptions}>
+					<VectorGrid
+						type="protobuf"
+						url="https://{s}.example/{z}/{x}/{y}.pbf"
+					/>
+				</MapContainer>
+			)).toThrow(
+				'react-leaflet-vectorgrid could not initialize the protobuf layer'
+			);
+		} finally {
+			L.vectorGrid = vectorGrid;
+		}
+	});
+
 	it('looks up and clones features when idField is a function', () => {
 		const layer = createVectorGridLayer();
 		jest.spyOn(L.vectorGrid, 'slicer').mockReturnValue(layer);

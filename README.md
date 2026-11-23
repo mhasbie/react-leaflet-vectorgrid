@@ -105,10 +105,10 @@ import VectorGrid from 'react-leaflet-vectorgrid';
 
 const options = {
 	type: 'protobuf',
-	url: 'https://free-{s}.tilehosting.com/data/v3/{z}/{x}/{y}.pbf.pict?key={key}'
+	url: 'https://free-{s}.tilehosting.com/data/v3/{z}/{x}/{y}.pbf.pict?key={key}',
 	vectorTileLayerStyles: { ... },
     subdomains: 'abcd',
-    key: 'abcdefghi01234567890'
+    accessKey: 'abcdefghi01234567890'
 };
 
 <MapContainer center={[2.935403, 101.448205]} zoom={4} style={{ height: '400px' }}>
