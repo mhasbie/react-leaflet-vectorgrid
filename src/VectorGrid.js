@@ -11,6 +11,24 @@ function isFunction(value) {
 	return typeof value === 'function';
 }
 
+function isDeepEqual(left, right) {
+	if (left === right) return true;
+	if (Array.isArray(left) || Array.isArray(right)) {
+		if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) return false;
+		return left.every((value, index) => isDeepEqual(value, right[index]));
+	}
+	if (isObject(left) && isObject(right)) {
+		const leftKeys = Object.keys(left);
+		const rightKeys = Object.keys(right);
+		if (leftKeys.length !== rightKeys.length) return false;
+		return leftKeys.every((key) =>
+			Object.prototype.hasOwnProperty.call(right, key) &&
+			isDeepEqual(left[key], right[key])
+		);
+	}
+	return false;
+}
+
 function patchVectorGridLayer(layer) {
 	const originalCreateLayer = layer._createLayer;
 	layer._createLayer = function (feature, pxPerExtent, layerStyle) {
@@ -28,9 +46,13 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 	const layerRef = useRef(null);
 	const highlightRef = useRef(null);
 	const activeRef = useRef(null);
+	const latestPropsRef = useRef(props);
+	const layerConfigurationRef = useRef(null);
+	const layerMapRef = useRef(null);
+	latestPropsRef.current = props;
 
 	const getFeatureId = (feature) => {
-		const { idField } = props;
+		const { idField } = latestPropsRef.current;
 		if (isFunction(idField)) {
 			return idField(feature);
 		}
@@ -41,7 +63,7 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 	};
 
 	const getFeature = (featureId) => {
-		const { data, idField } = props;
+		const { data, idField } = latestPropsRef.current;
 		if (!data || !Array.isArray(data.features) || !idField) return {};
 		const feature = data.features.find((item) => {
 			if (!item) return false;
@@ -119,10 +141,47 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 			tooltipClassName = '',
 			popup = null,
 			...rest
-		} = props;
+		} = latestPropsRef.current;
 
 		delete rest.leaflet;
 		delete rest.idField;
+
+		const layerConfiguration = {
+			data,
+			zIndex,
+			style,
+			hoverStyle,
+			activeStyle,
+			vectorTileLayerStyles,
+			url,
+			maxNativeZoom,
+			maxZoom,
+			minZoom,
+			subdomains,
+			accessKey,
+			accessToken,
+			type,
+			interactive,
+			tooltip,
+			tooltipClassName,
+			popup,
+			rest
+		};
+
+		if (
+			layerMapRef.current === map &&
+			layerConfigurationRef.current &&
+			isDeepEqual(layerConfigurationRef.current, layerConfiguration)
+		) {
+			return;
+		}
+
+		if (layerRef.current) {
+			clearHighlight();
+			clearActive();
+			map.removeLayer(layerRef.current);
+			layerRef.current = null;
+		}
 
 		const baseStyle = (properties) => {
 			if (isFunction(style)) {
@@ -188,13 +247,14 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 		layer
 			.on('mouseover', (event) => {
 				const { properties } = event.layer;
-				propagateEvent(onMouseover, event);
+				propagateEvent(latestPropsRef.current.onMouseover, event);
 
 				let hover;
-				if (isFunction(hoverStyle)) {
-					hover = hoverStyle(properties);
-				} else if (isObject(hoverStyle)) {
-					hover = { ...hoverStyle };
+				const latestHoverStyle = latestPropsRef.current.hoverStyle;
+				if (isFunction(latestHoverStyle)) {
+					hover = latestHoverStyle(properties);
+				} else if (isObject(latestHoverStyle)) {
+					hover = { ...latestHoverStyle };
 				}
 				const featureId = getFeatureId(event.layer);
 				if (hover && Object.keys(hover).length && featureId !== undefined && featureId !== null) {
@@ -205,19 +265,20 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 				}
 			})
 			.on('mouseout', (event) => {
-				propagateEvent(onMouseout, event);
+				propagateEvent(latestPropsRef.current.onMouseout, event);
 				clearHighlight();
 			})
 			.on('click', (event) => {
 				const { properties } = event.layer;
 				const featureId = getFeatureId(event.layer);
-				propagateEvent(onClick, event);
+				propagateEvent(latestPropsRef.current.onClick, event);
 
 				let active;
-				if (isFunction(activeStyle)) {
-					active = activeStyle(properties);
-				} else if (isObject(activeStyle)) {
-					active = { ...activeStyle };
+				const latestActiveStyle = latestPropsRef.current.activeStyle;
+				if (isFunction(latestActiveStyle)) {
+					active = latestActiveStyle(properties);
+				} else if (isObject(latestActiveStyle)) {
+					active = { ...latestActiveStyle };
 				}
 				if (active && Object.keys(active).length && featureId !== undefined && featureId !== null) {
 					clearActive();
@@ -227,15 +288,17 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 				}
 			})
 			.on('dblclick', (event) => {
-				propagateEvent(onDblclick, event);
+				propagateEvent(latestPropsRef.current.onDblclick, event);
 				clearActive();
 			})
 			.on('contextmenu', (event) => {
-				propagateEvent(onContextmenu, event);
+				propagateEvent(latestPropsRef.current.onContextmenu, event);
 				clearActive();
 			});
 
 		layerRef.current = layer;
+		layerConfigurationRef.current = layerConfiguration;
+		layerMapRef.current = map;
 		map.addLayer(layer);
 
 		if (tooltip) {
@@ -261,6 +324,9 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 			layer.bindPopup(popup);
 		}
 
+	}, [props, map]);
+
+	useEffect(() => {
 		return () => {
 			clearHighlight();
 			clearActive();
@@ -268,8 +334,10 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 				map.removeLayer(layerRef.current);
 				layerRef.current = null;
 			}
+			layerConfigurationRef.current = null;
+			layerMapRef.current = null;
 		};
-	}, [props, map]);
+	}, [map]);
 
 	return null;
 });

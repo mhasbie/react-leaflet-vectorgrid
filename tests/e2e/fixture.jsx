@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MapContainer } from 'react-leaflet';
 import VectorGrid from '../../src';
@@ -24,6 +24,8 @@ const data = {
 };
 
 function Fixture() {
+	const [selectedFeature, setSelectedFeature] = useState('No feature selected');
+
 	return (
 		<main>
 			<h1>VectorGrid fixture</h1>
@@ -33,13 +35,12 @@ function Fixture() {
 					idField="name"
 					style={{ color: '#222222', fillColor: '#336699', fillOpacity: 0.6 }}
 					onClick={(event) => {
-						document.getElementById('selected-feature').textContent =
-							`Selected: ${event.feature.properties.name}`;
+						setSelectedFeature(`Selected: ${event.feature.properties.name}`);
 					}}
 				/>
 			</MapContainer>
 			<p id="selected-feature" data-testid="selected-feature" aria-live="polite">
-				No feature selected
+				{selectedFeature}
 			</p>
 		</main>
 	);

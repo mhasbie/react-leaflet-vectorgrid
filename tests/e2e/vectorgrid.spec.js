@@ -20,4 +20,5 @@ test('selects a feature when it is clicked', async ({ page }) => {
 
 	await expect(page.getByTestId('selected-feature'))
 		.toHaveText('Selected: Browser test polygon');
+	await expect(page.locator('.leaflet-interactive').first()).toBeVisible();
 });

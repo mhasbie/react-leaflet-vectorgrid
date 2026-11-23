@@ -172,6 +172,36 @@ describe('VectorGrid', () => {
 		expect(secondLayer.resetFeatureStyle).toHaveBeenCalledWith('feature-1');
 	});
 
+	it('does not recreate the layer when only event callbacks change', () => {
+		const layer = createVectorGridLayer();
+		const slicer = jest.spyOn(L.vectorGrid, 'slicer').mockReturnValue(layer);
+		const removeLayer = jest.spyOn(L.Map.prototype, 'removeLayer');
+		const firstClick = jest.fn();
+		const secondClick = jest.fn();
+		const renderMap = (onClick) => (
+			<MapContainer {...mapOptions}>
+				<VectorGrid data={data} type="slicer" idField="name" onClick={onClick} />
+			</MapContainer>
+		);
+
+		const { rerender } = render(renderMap(firstClick));
+		rerender(renderMap(secondClick));
+
+		act(() => {
+			layer.handlers.click({
+				layer: {
+					properties: { name: 'Afghanistan' },
+					feature: data.features[0]
+				}
+			});
+		});
+
+		expect(slicer).toHaveBeenCalledTimes(1);
+		expect(removeLayer).not.toHaveBeenCalled();
+		expect(firstClick).not.toHaveBeenCalled();
+		expect(secondClick).toHaveBeenCalledTimes(1);
+	});
+
 	it('forwards vector events and applies hover and active styles', () => {
 		const layer = createVectorGridLayer();
 		jest.spyOn(L.vectorGrid, 'slicer').mockReturnValue(layer);
