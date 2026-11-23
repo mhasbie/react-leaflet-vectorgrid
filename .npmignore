@@ -5,6 +5,7 @@ src/
 example/
 coverage/
 __tests__/
+tests/
 
 #Files
 .babelrc
@@ -13,3 +14,8 @@ __tests__/
 .travis.yml
 .vscode
 webpack.config.js
+webpack.e2e.config.js
+playwright.config.js
+.github/
+test-results/
+playwright-report/

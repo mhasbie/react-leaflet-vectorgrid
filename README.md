@@ -137,6 +137,20 @@ Option          | Type      | Default | Description
 React-Leaflet v4 and v5 are supported directly by `useMap`. Do not wrap `VectorGrid`
 with `withLeaflet`; that HOC is only part of the legacy React-Leaflet API.
 
+## Tests
+
+Install dependencies with `npm ci`. Install Playwright's Chromium browser once
+with `npx playwright install chromium`, then run:
+
+```bash
+npm run test:unit
+npm run test:e2e
+npm run test:all
+```
+
+The Playwright suite builds and serves a local fixture automatically; it does
+not require external map tiles or network data.
+
 # Credits
 Credits goes to all the [contributors of the original work](https://github.com/Leaflet/Leaflet.VectorGrid/graphs/contributors) and [everyone who contributed to this project](https://github.com/mhasbie/react-leaflet-vectorgrid/graphs/contributors).
 

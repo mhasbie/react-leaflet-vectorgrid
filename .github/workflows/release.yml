@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pushed commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up npm trusted publishing
+        run: npm install --global npm@11.15.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Build package
+        run: npm run build
+
+      - name: Read version and check release tag
+        id: release
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v${VERSION}"
+
+          if [ -z "$VERSION" ]; then
+            echo "::error::package.json does not specify a version."
+            exit 1
+          fi
+
+          if git rev-parse --quiet --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "::error::Release tag ${TAG} already exists. Bump package.json before merging another release PR."
+            exit 1
+          fi
+
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Stage package on npm
+        run: npm stage publish --ignore-scripts
+
+      - name: Create GitHub Release
+        run: gh release create "${{ steps.release.outputs.tag }}" --target "$(git rev-parse HEAD)" --title "${{ steps.release.outputs.tag }}" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

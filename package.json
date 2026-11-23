@@ -13,7 +13,10 @@
         "compile:lib": "babel src --out-dir lib",
         "prepublishOnly": "npm run build",
         "test": "jest",
-        "test:unit": "jest"
+        "test:unit": "jest",
+        "test:e2e": "playwright test",
+        "test:e2e:build": "webpack --config webpack.e2e.config.js",
+        "test:all": "npm run test:unit && npm run test:e2e"
     },
     "repository": {
         "type": "git",
@@ -46,6 +49,7 @@
         "@babel/plugin-transform-modules-commonjs": "^7.27.1",
         "@babel/preset-env": "^7.28.5",
         "@babel/preset-react": "^7.28.5",
+        "@playwright/test": "^1.56.1",
         "@testing-library/dom": "^10.4.2",
         "@testing-library/jest-dom": "^8.0.0",
         "@testing-library/react": "^16.3.0",

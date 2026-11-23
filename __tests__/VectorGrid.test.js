@@ -109,6 +109,44 @@ describe('VectorGrid', () => {
 		);
 	});
 
+	it('looks up and clones features when idField is a function', () => {
+		const layer = createVectorGridLayer();
+		jest.spyOn(L.vectorGrid, 'slicer').mockReturnValue(layer);
+		const ref = createRef();
+		const idField = (feature) => feature.properties.name;
+
+		render(
+			<MapContainer {...mapOptions}>
+				<VectorGrid ref={ref} data={data} type="slicer" idField={idField} />
+			</MapContainer>
+		);
+
+		const feature = ref.current.getFeature('Afghanistan');
+		expect(feature).toEqual(data.features[0]);
+		feature.properties.name = 'Changed';
+		expect(data.features[0].properties.name).toBe('Afghanistan');
+	});
+
+	it('uses the style callback as the base style for sliced features', () => {
+		const layer = createVectorGridLayer();
+		const slicer = jest.spyOn(L.vectorGrid, 'slicer').mockReturnValue(layer);
+		const style = jest.fn(() => ({ fillColor: '#123456' }));
+
+		render(
+			<MapContainer {...mapOptions}>
+				<VectorGrid data={data} type="slicer" style={style} />
+			</MapContainer>
+		);
+
+		const options = slicer.mock.calls[0][1];
+		expect(options.vectorTileLayerStyles.sliced({ name: 'Afghanistan' }, 3)).toEqual({
+			fillColor: '#123456',
+			fill: true,
+			stroke: true
+		});
+		expect(style).toHaveBeenCalledWith({ name: 'Afghanistan' });
+	});
+
 	it('recreates the layer when props change and forwards imperative style calls', () => {
 		const firstLayer = createVectorGridLayer();
 		const secondLayer = createVectorGridLayer();
@@ -176,5 +214,40 @@ describe('VectorGrid', () => {
 			'sample',
 			expect.objectContaining({ color: 'yellow' })
 		);
+	});
+
+	it('resets hover and active styles when their clearing events fire', () => {
+		const layer = createVectorGridLayer();
+		jest.spyOn(L.vectorGrid, 'slicer').mockReturnValue(layer);
+
+		render(
+			<MapContainer {...mapOptions}>
+				<VectorGrid
+					data={data}
+					type="slicer"
+					idField="name"
+					hoverStyle={{ fillOpacity: 1 }}
+					activeStyle={{ color: 'yellow' }}
+				/>
+			</MapContainer>
+		);
+
+		const event = {
+			layer: {
+				properties: { name: 'sample' },
+				feature: data.features[0]
+			}
+		};
+
+		act(() => {
+			layer.handlers.mouseover(event);
+			layer.handlers.mouseout(event);
+			layer.handlers.click(event);
+			layer.handlers.dblclick(event);
+		});
+
+		expect(layer.resetFeatureStyle).toHaveBeenNthCalledWith(1, 'sample');
+		expect(layer.resetFeatureStyle).toHaveBeenNthCalledWith(2, 'sample');
+		expect(layer.resetFeatureStyle).toHaveBeenCalledTimes(2);
 	});
 });
