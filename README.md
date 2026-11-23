@@ -2,9 +2,6 @@
 
 [![version](https://img.shields.io/npm/v/react-leaflet-vectorgrid.svg?style=plastic)](http://npm.im/react-leaflet-vectorgrid)
 [![react-leaflet compatibility](https://img.shields.io/npm/dependency-version/react-leaflet-vectorgrid/peer/react-leaflet.svg?style=plastic)](https://github.com/mhasbie/react-leaflet-vectorgrid)
-[![travis build](https://img.shields.io/travis/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://travis-ci.org/mhasbie/react-leaflet-vectorgrid)
-[![dependencies](https://img.shields.io/david/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://david-dm.org/mhasbie/react-leaflet-vectorgrid)
-[![peer dependencies](https://img.shields.io/david/peer/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://david-dm.org/mhasbie/react-leaflet-vectorgrid?type=peer)
 [![issues](https://img.shields.io/github/issues/mhasbie/react-leaflet-vectorgrid.svg?style=plastic)](https://github.com/mhasbie/react-leaflet-vectorgrid/issues)
 [![downloads](https://img.shields.io/npm/dt/react-leaflet-vectorgrid.svg?style=plastic)](http://npm-stat.com/charts.html?package=react-leaflet-vectorgrid&from=2018-01-01)
 [![MIT License](https://img.shields.io/npm/l/react-leaflet-vectorgrid.svg?style=plastic)](http://opensource.org/licenses/MIT)
@@ -15,14 +12,11 @@ for [react-leaflet](https://github.com/PaulLeCam/react-leaflet).
 
 Display gridded vector data (sliced [GeoJSON](http://geojson.org/), [TopoJSON](https://github.com/mbostock/topojson/wiki) or [protobuf vector tiles](https://github.com/mapbox/vector-tile-spec)) in [Leaflet](http://www.leafletjs.com) 1.0.0
 
-*Tested with Leaflet 1.3.4 and React-Leaflet 1.9.1, React-Leaflet 2.1.4*
+*Tested with React 18/19, Leaflet 1.9.4, and React-Leaflet 4/5*
 
 ## Demos
 
-| Version	| Demo	| Description			|
-| ---		| ---	| ---					|
-| react-leaflet@1.9.1 | [`JSFiddle`](https://jsfiddle.net/m_hasbie/rnx44us3/), [`CodePen`](https://codepen.io/m_hasbie/full/jzpbwj/) | Sliced GeoJSON |
-| react-leaflet@2.1.4 | [`JSFiddle`](http://jsfiddle.net/m_hasbie/Lkp96dj3/), [`CodePen`](https://codepen.io/m_hasbie/full/jvgyPq/) | Sliced GeoJSON |
+[`Demo Page`](https://mhasbie.github.io/react-leaflet-vectorgrid/)
 
 
 
@@ -31,22 +25,17 @@ Display gridded vector data (sliced [GeoJSON](http://geojson.org/), [TopoJSON](h
 ### Install via NPM
 
 ```bash
-npm install --save react-leaflet-vectorgrid
-```
-
-`react-leaflet-vectorgrid` requires `lodash` as [`peerDependency`](https://docs.npmjs.com/files/package.json#peerdependencies)
-
-(React, PropTypes, Leaflet, react-leaflet also should be installed)
-```bash
-npm install --save lodash
+npm install react-leaflet-vectorgrid leaflet react react-dom react-leaflet
 ```
 
 ## Usage example
 
+### React-Leaflet v4/v5
+
 ### Slicer
 
 ```javascript
-import { Map, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import VectorGrid from 'react-leaflet-vectorgrid';
 
 const options = {
@@ -75,14 +64,14 @@ const options = {
 	zIndex: 401
 };
 
-<Map center={[2.935403, 101.448205]} zoom={4}>
+<MapContainer center={[2.935403, 101.448205]} zoom={4} style={{ height: '400px' }}>
   <TileLayer
     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
   />
 
   <VectorGrid {...options} onClick={this.onClick} />
-</Map>
+</MapContainer>
 ```
 
 #### Options
@@ -107,7 +96,7 @@ Option          | Type      | Default | Description
 ### Protobuf
 
 ```javascript
-import { Map, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import VectorGrid from 'react-leaflet-vectorgrid';
 
 const options = {
@@ -118,14 +107,14 @@ const options = {
     key: 'abcdefghi01234567890'
 };
 
-<Map center={[2.935403, 101.448205]} zoom={4}>
+<MapContainer center={[2.935403, 101.448205]} zoom={4} style={{ height: '400px' }}>
   <TileLayer
     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
   />
 
   <VectorGrid {...options} />
-</Map>
+</MapContainer>
 ```
 
 #### Options
@@ -139,20 +128,10 @@ Option          | Type      | Default | Description
 `accessToken`  		| `String`  | `''`    | Tile server access token.
 `vectorTileLayerStyles`   | `Object`  	 | `undefined`    | A data structure holding initial symbolizer definitions for the vector features. Refer [Leaflet.VectorGrid doc](http://leaflet.github.io/Leaflet.VectorGrid/vectorgrid-api-docs.html#styling-vectorgrids) for more info.
 
-### Usage with React-Leaflet v2
+### React-Leaflet compatibility
 
-This is compatible with version 2 of React-Leaflet, but you have to wrap the `VectorGrid` using the [`withLeaflet` higher-order component](https://react-leaflet.js.org/docs/en/context.html) to give it access to the new context mechanism. For example:
-
-```javascript
-import { Map, withLeaflet } from 'react-leaflet';
-import VectorGridDefault from 'react-leaflet-vectorgrid';
-
-// wrap the VectorGrid component using `withLeaflet` HOC
-const VectorGrid = withLeaflet(VectorGridDefault);
-
-// use <VectorGrid /> component as you would use it in react-leaflet v1
-
-```
+React-Leaflet v4 and v5 are supported directly by `useMap`. Do not wrap `VectorGrid`
+with `withLeaflet`; that HOC is only part of the legacy React-Leaflet API.
 
 # Credits
 Credits goes to all the [contributors of the original work](https://github.com/Leaflet/Leaflet.VectorGrid/graphs/contributors) and [everyone who contributed to this project](https://github.com/mhasbie/react-leaflet-vectorgrid/graphs/contributors).
