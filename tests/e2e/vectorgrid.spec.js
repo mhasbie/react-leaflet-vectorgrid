@@ -23,6 +23,24 @@ test('selects a feature when it is clicked', async ({ page }) => {
 	await expect(page.locator('.leaflet-interactive').first()).toBeVisible();
 });
 
+test('fires one mouseover while applying hover style to a feature', async ({ page }) => {
+	await page.goto('/?hover=true&strict=true');
+	const feature = page.locator('.leaflet-interactive').first();
+	await expect(feature).toBeVisible();
+	const bounds = await feature.boundingBox();
+	await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+
+	await expect.poll(() => page.evaluate(() => window.fixtureMouseovers)).toBe(1);
+	await expect(page.locator('.leaflet-tooltip')).toHaveText('Browser test polygon');
+	await page.waitForTimeout(100);
+	await expect.poll(() => page.evaluate(() => window.fixtureMouseovers)).toBe(1);
+	await page.mouse.click(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+	await expect(page.locator('.leaflet-popup-content'))
+		.toContainText('Browser test polygon');
+	await expect(page.getByTestId('selected-feature'))
+		.toHaveText('Selected: Browser test polygon');
+});
+
 test('drags the map over a non-interactive vector grid', async ({ page }) => {
 	await page.goto('/?interactive=false');
 	await expect(page.getByTestId('map-center')).toHaveText('0.00,0.00');

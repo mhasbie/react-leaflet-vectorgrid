@@ -11,6 +11,17 @@ function isFunction(value) {
 	return typeof value === 'function';
 }
 
+function getFeatureContent(content, feature) {
+	if (isFunction(content)) {
+		return content(feature);
+	}
+	if (typeof content === 'string' && feature?.properties &&
+		Object.prototype.hasOwnProperty.call(feature.properties, content)) {
+		return String(feature.properties[content]);
+	}
+	return content;
+}
+
 function isDeepEqual(left, right) {
 	if (left === right) return true;
 	if (Array.isArray(left) || Array.isArray(right)) {
@@ -70,6 +81,7 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 	const latestPropsRef = useRef(props);
 	const layerConfigurationRef = useRef(null);
 	const layerMapRef = useRef(null);
+	const eventDedupeRef = useRef(new WeakMap());
 	latestPropsRef.current = props;
 
 	const getFeatureId = (feature) => {
@@ -94,9 +106,21 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 		return feature ? JSON.parse(JSON.stringify(feature)) : {};
 	};
 
-	const propagateEvent = (eventHandler, event) => {
+	const propagateEvent = (eventName, eventHandler, event) => {
 		if (!isFunction(eventHandler)) return;
 		const featureId = getFeatureId(event.layer);
+		const originalEvent = event.originalEvent;
+		if (originalEvent && (typeof originalEvent === 'object' || typeof originalEvent === 'function') &&
+			featureId !== undefined && featureId !== null) {
+			let eventKeys = eventDedupeRef.current.get(originalEvent);
+			if (!eventKeys) {
+				eventKeys = new Set();
+				eventDedupeRef.current.set(originalEvent, eventKeys);
+			}
+			const eventKey = `${eventName}:${String(featureId)}`;
+			if (eventKeys.has(eventKey)) return;
+			eventKeys.add(eventKey);
+		}
 		eventHandler({
 			...event,
 			feature: getFeature(featureId)
@@ -272,7 +296,8 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 		layer
 			.on('mouseover', (event) => {
 				const { properties } = event.layer;
-				propagateEvent(latestPropsRef.current.onMouseover, event);
+				const featureId = getFeatureId(event.layer);
+				propagateEvent('mouseover', latestPropsRef.current.onMouseover, event);
 
 				let hover;
 				const latestHoverStyle = latestPropsRef.current.hoverStyle;
@@ -281,7 +306,6 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 				} else if (isObject(latestHoverStyle)) {
 					hover = { ...latestHoverStyle };
 				}
-				const featureId = getFeatureId(event.layer);
 				if (hover && Object.keys(hover).length && featureId !== undefined && featureId !== null) {
 					clearHighlight();
 					highlightRef.current = featureId;
@@ -290,13 +314,13 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 				}
 			})
 			.on('mouseout', (event) => {
-				propagateEvent(latestPropsRef.current.onMouseout, event);
+				propagateEvent('mouseout', latestPropsRef.current.onMouseout, event);
 				clearHighlight();
 			})
 			.on('click', (event) => {
 				const { properties } = event.layer;
 				const featureId = getFeatureId(event.layer);
-				propagateEvent(latestPropsRef.current.onClick, event);
+				propagateEvent('click', latestPropsRef.current.onClick, event);
 
 				let active;
 				const latestActiveStyle = latestPropsRef.current.activeStyle;
@@ -313,11 +337,11 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 				}
 			})
 			.on('dblclick', (event) => {
-				propagateEvent(latestPropsRef.current.onDblclick, event);
+				propagateEvent('dblclick', latestPropsRef.current.onDblclick, event);
 				clearActive();
 			})
 			.on('contextmenu', (event) => {
-				propagateEvent(latestPropsRef.current.onContextmenu, event);
+				propagateEvent('contextmenu', latestPropsRef.current.onContextmenu, event);
 				clearActive();
 			});
 
@@ -327,18 +351,10 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 		map.addLayer(layer);
 
 		if (tooltip) {
-			layer.bindTooltip((feature) => {
-				if (isFunction(tooltip)) {
-					return tooltip(feature);
-				}
-				if (typeof tooltip === 'string') {
-					if (feature && feature.properties && Object.prototype.hasOwnProperty.call(feature.properties, tooltip)) {
-						return String(feature.properties[tooltip]);
-					}
-					return tooltip;
-				}
-				return '';
-			}, {
+			layer.on('mouseover', (event) => {
+				layer.setTooltipContent(getFeatureContent(tooltip, event.layer));
+			});
+			layer.bindTooltip('', {
 				sticky: true,
 				direction: 'auto',
 				className: tooltipClassName
@@ -346,7 +362,10 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 		}
 
 		if (popup) {
-			layer.bindPopup(popup);
+			layer.on('click', (event) => {
+				layer.setPopupContent(getFeatureContent(popup, event.layer));
+			});
+			layer.bindPopup('');
 		}
 
 	}, [props, map]);

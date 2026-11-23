@@ -175,6 +175,11 @@
 				showPopup: true
 			};
 
+			const countryPopup = (layer) => {
+				const properties = layer?.properties || layer?.feature?.properties;
+				return `<strong>${properties?.name || 'Unknown feature'}</strong>`;
+			};
+
 			function DebugApp() {
 				const [applied, setApplied] = useState(defaults);
 				const [events, setEvents] = useState([]);
@@ -273,10 +278,7 @@
 								zIndex={applied.zIndex}
 								interactive={applied.interactive}
 								tooltip={applied.showTooltip ? 'name' : null}
-								popup={applied.showPopup ? (layer) => {
-									const properties = layer?.properties || layer?.feature?.properties;
-									return `<strong>${properties?.name || 'Unknown feature'}</strong>`;
-								} : null}
+								popup={applied.showPopup ? countryPopup : null}
 								style={{
 									weight: applied.weight,
 									opacity: applied.opacity,

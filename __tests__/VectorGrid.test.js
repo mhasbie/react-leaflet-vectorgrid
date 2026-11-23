@@ -327,6 +327,55 @@ describe('VectorGrid', () => {
 		);
 	});
 
+	it('deduplicates tiled callbacks from the same DOM event', () => {
+		const layer = createVectorGridLayer();
+		jest.spyOn(L.vectorGrid, 'slicer').mockReturnValue(layer);
+		const onClick = jest.fn();
+		const onMouseover = jest.fn();
+
+		render(
+			<MapContainer {...mapOptions}>
+				<VectorGrid
+					data={data}
+					type="slicer"
+					idField="name"
+					onClick={onClick}
+					onMouseover={onMouseover}
+				/>
+			</MapContainer>
+		);
+
+		const firstOriginalEvent = {};
+		const firstEvent = {
+			originalEvent: firstOriginalEvent,
+			layer: {
+				properties: { name: 'Afghanistan' }
+			}
+		};
+
+		act(() => {
+			layer.handlers.mouseover(firstEvent);
+			layer.handlers.mouseover(firstEvent);
+			layer.handlers.click(firstEvent);
+			layer.handlers.click(firstEvent);
+		});
+
+		const secondEvent = {
+			originalEvent: {},
+			layer: {
+				properties: { name: 'Afghanistan' }
+			}
+		};
+
+		act(() => {
+			layer.handlers.mouseover(secondEvent);
+			layer.handlers.click(secondEvent);
+		});
+
+		expect(onMouseover).toHaveBeenCalledTimes(2);
+		expect(onClick).toHaveBeenCalledTimes(2);
+	});
+
 	it('resets hover and active styles when their clearing events fire', () => {
 		const layer = createVectorGridLayer();
 		jest.spyOn(L.vectorGrid, 'slicer').mockReturnValue(layer);
