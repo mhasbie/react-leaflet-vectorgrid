@@ -9,7 +9,50 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  test-unit:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: React-Leaflet 3
+            react: "17.0.2"
+            react_dom: "17.0.2"
+            react-leaflet: "3.2.5"
+            testing-library-react: "12.1.5"
+            testing-library-dom: "8.20.1"
+          - name: React-Leaflet 4
+            react: "18.3.1"
+            react_dom: "18.3.1"
+            react-leaflet: "4.2.1"
+            testing-library-react: "16.3.0"
+            testing-library-dom: "10.4.2"
+          - name: React-Leaflet 5
+            react: "19.2.3"
+            react_dom: "19.2.3"
+            react-leaflet: "5.0.0"
+            testing-library-react: "16.3.0"
+            testing-library-dom: "10.4.2"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install ${{ matrix.name }} compatibility versions
+        run: npm install --no-save --legacy-peer-deps react@${{ matrix.react }} react-dom@${{ matrix.react_dom }} react-leaflet@${{ matrix.react-leaflet }} @testing-library/react@${{ matrix.testing-library-react }} @testing-library/dom@${{ matrix.testing-library-dom }}
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+  test-e2e:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository

@@ -12,7 +12,7 @@ for [react-leaflet](https://github.com/PaulLeCam/react-leaflet).
 
 Display gridded vector data (sliced [GeoJSON](http://geojson.org/), [TopoJSON](https://github.com/mbostock/topojson/wiki) or [protobuf vector tiles](https://github.com/mapbox/vector-tile-spec)) in [Leaflet](http://www.leafletjs.com) 1.0.0
 
-*Tested with React 18/19, Leaflet 1.9.4, and React-Leaflet 4/5*
+*Tested with React 17/18/19, Leaflet 1.7.1/1.9.4, and React-Leaflet 3/4/5*
 
 ## Demos
 
@@ -34,7 +34,7 @@ npm install react-leaflet-vectorgrid leaflet react react-dom react-leaflet
 
 ## Usage example
 
-### React-Leaflet v4/v5
+### React-Leaflet v3/v4/v5
 
 ### Slicer
 
@@ -135,8 +135,10 @@ Option          | Type      | Default | Description
 
 ### React-Leaflet compatibility
 
-React-Leaflet v4 and v5 are supported directly by `useMap`. Do not wrap `VectorGrid`
-with `withLeaflet`; that HOC is only part of the legacy React-Leaflet API.
+React-Leaflet v3, v4, and v5 are supported directly by `useMap`. React 17 is supported
+with React-Leaflet v3, React 18 with v4, and React 19 with v5. Do not wrap `VectorGrid`
+with `withLeaflet`; that HOC is only part of the legacy React-Leaflet API and is not
+required or supported by this component.
 
 ## Tests
 
