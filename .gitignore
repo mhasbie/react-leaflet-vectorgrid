@@ -1,3 +1,6 @@
 node_modules/
 lib/
 coverage/
+tests/e2e/dist/
+test-results/
+playwright-report/

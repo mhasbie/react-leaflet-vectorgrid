@@ -1,40 +1,166 @@
-import { MapLayer } from 'react-leaflet';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet.vectorgrid';
-import isObject from 'lodash/isObject';
-import isFunction from 'lodash/isFunction';
-import isString from 'lodash/isString';
-import isEmpty from 'lodash/isEmpty';
-import clone from 'lodash/clone';
-import cloneDeep from 'lodash/cloneDeep';
-import extend from 'lodash/extend';
-import merge from 'lodash/merge';
-import has from 'lodash/has';
-import find from 'lodash/find';
 
-function patchVectorGridLayer(obj) {
-	// Fix error for point data.
-	// eg. mouseover does not work without this.
-	obj._createLayer_orig = obj._createLayer;
-	obj._createLayer = function (feat, pxPerExtent, layerStyle) {
-		let layer = this._createLayer_orig(feat, pxPerExtent, layerStyle);
-		if (feat.type === 1) {
-			layer.getLatLng = null;
-		}
-		return layer;
-	};
-
-	// do this for chaining
-	return obj;
+function isObject(value) {
+	return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
-export default class VectorGrid extends MapLayer {
-	createLeafletElement(props) {
-		const {
-			map,
-			pane,
-			layerContainer
-		} = props.leaflet || this.context;
+function isFunction(value) {
+	return typeof value === 'function';
+}
+
+function getFeatureContent(content, feature) {
+	if (isFunction(content)) {
+		return content(feature);
+	}
+	if (typeof content === 'string' && feature?.properties &&
+		Object.prototype.hasOwnProperty.call(feature.properties, content)) {
+		return String(feature.properties[content]);
+	}
+	return content;
+}
+
+function isDeepEqual(left, right) {
+	if (left === right) return true;
+	if (Array.isArray(left) || Array.isArray(right)) {
+		if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) return false;
+		return left.every((value, index) => isDeepEqual(value, right[index]));
+	}
+	if (isObject(left) && isObject(right)) {
+		const leftKeys = Object.keys(left);
+		const rightKeys = Object.keys(right);
+		if (leftKeys.length !== rightKeys.length) return false;
+		return leftKeys.every((key) =>
+			Object.prototype.hasOwnProperty.call(right, key) &&
+			isDeepEqual(left[key], right[key])
+		);
+	}
+	return false;
+}
+
+function assertProtobufSupport() {
+	if (!L.vectorGrid || typeof L.vectorGrid.protobuf !== 'function') {
+		throw new Error(
+			'react-leaflet-vectorgrid could not initialize the protobuf layer. ' +
+			'Ensure leaflet and leaflet.vectorgrid resolve to the same Leaflet installation.'
+		);
+	}
+}
+
+function patchVectorGridLayer(layer, interactive) {
+	const originalCreateLayer = layer._createLayer;
+	layer._createLayer = function (feature, pxPerExtent, layerStyle) {
+		const createdLayer = originalCreateLayer.call(this, feature, pxPerExtent, layerStyle);
+		if (feature.type === 1) {
+			createdLayer.getLatLng = null;
+		}
+		if (!interactive) {
+			createdLayer.options.interactive = false;
+			createdLayer.options.bubblingMouseEvents = false;
+			const originalRender = createdLayer.render;
+			createdLayer.render = function (renderer, style) {
+				const result = originalRender.call(this, renderer, style);
+				if (this._path) {
+					this._path.style.pointerEvents = 'none';
+				}
+				return result;
+			};
+		}
+		return createdLayer;
+	};
+	return layer;
+}
+
+const VectorGrid = forwardRef(function VectorGrid(props, ref) {
+	const map = useMap();
+	const layerRef = useRef(null);
+	const highlightRef = useRef(null);
+	const activeRef = useRef(null);
+	const latestPropsRef = useRef(props);
+	const layerConfigurationRef = useRef(null);
+	const layerMapRef = useRef(null);
+	const eventDedupeRef = useRef(new WeakMap());
+	latestPropsRef.current = props;
+
+	const getFeatureId = (feature) => {
+		const { idField } = latestPropsRef.current;
+		if (isFunction(idField)) {
+			return idField(feature);
+		}
+		if (typeof idField === 'string' && feature && feature.properties) {
+			return feature.properties[idField];
+		}
+		return undefined;
+	};
+
+	const getFeature = (featureId) => {
+		const { data, idField } = latestPropsRef.current;
+		if (!data || !Array.isArray(data.features) || !idField) return {};
+		const feature = data.features.find((item) => {
+			if (!item) return false;
+			if (isFunction(idField)) return getFeatureId(item) === featureId;
+			return item.properties && item.properties[idField] === featureId;
+		});
+		return feature ? JSON.parse(JSON.stringify(feature)) : {};
+	};
+
+	const propagateEvent = (eventName, eventHandler, event) => {
+		if (!isFunction(eventHandler)) return;
+		const featureId = getFeatureId(event.layer);
+		const originalEvent = event.originalEvent;
+		if (originalEvent && (typeof originalEvent === 'object' || typeof originalEvent === 'function') &&
+			featureId !== undefined && featureId !== null) {
+			let eventKeys = eventDedupeRef.current.get(originalEvent);
+			if (!eventKeys) {
+				eventKeys = new Set();
+				eventDedupeRef.current.set(originalEvent, eventKeys);
+			}
+			const eventKey = `${eventName}:${String(featureId)}`;
+			if (eventKeys.has(eventKey)) return;
+			eventKeys.add(eventKey);
+		}
+		eventHandler({
+			...event,
+			feature: getFeature(featureId)
+		});
+	};
+
+	const clearHighlight = () => {
+		if (highlightRef.current && highlightRef.current !== activeRef.current) {
+			layerRef.current?.resetFeatureStyle(highlightRef.current);
+		}
+		highlightRef.current = null;
+	};
+
+	const clearActive = () => {
+		if (activeRef.current) {
+			layerRef.current?.resetFeatureStyle(activeRef.current);
+		}
+		activeRef.current = null;
+	};
+
+	const setFeatureStyle = (id, style) => {
+		layerRef.current?.setFeatureStyle(id, style);
+	};
+
+	const resetFeatureStyle = (id) => {
+		layerRef.current?.resetFeatureStyle(id);
+	};
+
+	useImperativeHandle(ref, () => ({
+		setFeatureStyle,
+		resetFeatureStyle,
+		clearHighlight,
+		clearActive,
+		getFeature,
+		get leafletElement() {
+			return layerRef.current;
+		}
+	}), [props]);
+
+	useEffect(() => {
 		const {
 			data,
 			zIndex,
@@ -54,21 +180,62 @@ export default class VectorGrid extends MapLayer {
 			subdomains,
 			accessKey,
 			accessToken,
+			tolerance = 0.000001,
 			type = 'slicer',
 			interactive = true,
+			tooltip = null,
+			tooltipClassName = '',
+			popup = null,
 			...rest
-		} = props;
-		
-		// `leaflet` prop is being passed down by withLeaflet() HOC wrapper in react-leaflet v2
-		// It caused the plugin to break. We don't need to pass it down to L.vectorgrid
-		delete(rest.leaflet);
+		} = latestPropsRef.current;
 
-		// get feature base styling
-		const baseStyle = (properties, zoom) => {
+		delete rest.leaflet;
+		delete rest.idField;
+
+		const layerConfiguration = {
+			data,
+			zIndex,
+			style,
+			hoverStyle,
+			activeStyle,
+			vectorTileLayerStyles,
+			url,
+			maxNativeZoom,
+			maxZoom,
+			minZoom,
+			subdomains,
+			accessKey,
+			accessToken,
+			tolerance,
+			type,
+			interactive,
+			tooltip,
+			tooltipClassName,
+			popup,
+			rest
+		};
+
+		if (
+			layerMapRef.current === map &&
+			layerConfigurationRef.current &&
+			isDeepEqual(layerConfigurationRef.current, layerConfiguration)
+		) {
+			return;
+		}
+
+		if (layerRef.current) {
+			clearHighlight();
+			clearActive();
+			map.removeLayer(layerRef.current);
+			layerRef.current = null;
+		}
+
+		const baseStyle = (properties) => {
 			if (isFunction(style)) {
 				return style(properties);
-			} else if (isObject(style)) {
-				return style;
+			}
+			if (isObject(style)) {
+				return { ...style };
 			}
 			return {
 				weight: 0.5,
@@ -80,13 +247,15 @@ export default class VectorGrid extends MapLayer {
 				stroke: true
 			};
 		};
-		this.highlight = null;
-		this.active = null;
 
-		let vectorGrid;
+		const pane = rest.pane;
+		const paneElement = pane ? map.getPane(pane) : null;
+		const paneZIndex = paneElement ? Number(paneElement.style.zIndex) : undefined;
 
+		let layer;
 		if (type === 'protobuf') {
-			vectorGrid = L.vectorGrid.protobuf(url, {
+			assertProtobufSupport();
+			layer = L.vectorGrid.protobuf(url, {
 				vectorTileLayerStyles,
 				interactive,
 				url,
@@ -94,185 +263,127 @@ export default class VectorGrid extends MapLayer {
 				subdomains,
 				key: accessKey,
 				token: accessToken,
-				zIndex: zIndex || Number(layerContainer._panes[pane] && layerContainer._panes[pane].style.zIndex),
-				getFeatureId: feature => this._getFeatureId(feature),
+				zIndex: zIndex ?? paneZIndex,
+				getFeatureId,
 				rendererFactory: L.svg.tile,
-				maxZoom: maxZoom || map.getMaxZoom(),
-				minZoom: minZoom || map.getMinZoom(),
-				// pass through other props so we can change lower level options of VectorGrid
+				maxZoom: maxZoom ?? map.getMaxZoom(),
+				minZoom: minZoom ?? map.getMinZoom(),
 				...rest
 			});
 		} else {
-			vectorGrid = L.vectorGrid.slicer(data, {
+			layer = L.vectorGrid.slicer(data, {
 				interactive,
-				zIndex: zIndex || Number(layerContainer._panes[pane] && layerContainer._panes[pane].style.zIndex),
-				getFeatureId: feature => this._getFeatureId(feature),
+				zIndex: zIndex ?? paneZIndex,
+				getFeatureId,
 				rendererFactory: L.svg.tile,
-				maxZoom: maxZoom || map.getMaxZoom(),
-				minZoom: minZoom || map.getMinZoom(),
+				maxZoom: maxZoom ?? map.getMaxZoom(),
+				minZoom: minZoom ?? map.getMinZoom(),
+				tolerance,
 				vectorTileLayerStyles: vectorTileLayerStyles || {
 					sliced: (properties, zoom) => {
-						const bs = baseStyle(properties, zoom);
-						bs.fill = true;
-						bs.stroke = true;
-						return bs;
+						const result = baseStyle(properties, zoom);
+						result.fill = true;
+						result.stroke = true;
+						return result;
 					}
 				},
-				// pass through other props so we can change lower level options of VectorGrid
 				...rest
 			});
 		}
 
-		return patchVectorGridLayer(vectorGrid)
-			.on('mouseover', (e) => {
-				const {
-					properties
-				} = e.layer;
-				this._propagateEvent(onMouseover, e);
+		patchVectorGridLayer(layer, interactive);
 
-				// on mouseover styling
-				let st;
-				const featureId = this._getFeatureId(e.layer);
-				if (isFunction(hoverStyle)) {
-					st = hoverStyle(properties);
-				} else if (isObject(hoverStyle)) {
-					st = cloneDeep(hoverStyle);
-				}
-				if (!isEmpty(st) && featureId) {
-					this.clearHighlight();
-					this.highlight = featureId;
-					const base = cloneDeep(baseStyle(properties));
-					const hover = extend(base, st);
-					this.setFeatureStyle(featureId, hover);
-				}
-			})
-			.on('mouseout', (e) => {
-				this._propagateEvent(onMouseout, e);
-				this.clearHighlight();
-			})
-			.on('click', (e) => {
-				const {
-					properties
-				} = e.layer;
-				const featureId = this._getFeatureId(e.layer);
+		layer
+			.on('mouseover', (event) => {
+				const { properties } = event.layer;
+				const featureId = getFeatureId(event.layer);
+				propagateEvent('mouseover', latestPropsRef.current.onMouseover, event);
 
-				this._propagateEvent(onClick, e);
+				let hover;
+				const latestHoverStyle = latestPropsRef.current.hoverStyle;
+				if (isFunction(latestHoverStyle)) {
+					hover = latestHoverStyle(properties);
+				} else if (isObject(latestHoverStyle)) {
+					hover = { ...latestHoverStyle };
+				}
+				if (hover && Object.keys(hover).length && featureId !== undefined && featureId !== null) {
+					clearHighlight();
+					highlightRef.current = featureId;
+					const hoverStyleValue = { ...baseStyle(properties), ...hover };
+					setFeatureStyle(featureId, hoverStyleValue);
+				}
+			})
+			.on('mouseout', (event) => {
+				propagateEvent('mouseout', latestPropsRef.current.onMouseout, event);
+				clearHighlight();
+			})
+			.on('click', (event) => {
+				const { properties } = event.layer;
+				const featureId = getFeatureId(event.layer);
+				propagateEvent('click', latestPropsRef.current.onClick, event);
 
-				// set active style
-				let st;
-				if (isFunction(activeStyle)) {
-					st = activeStyle(properties);
-				} else if (isObject(activeStyle)) {
-					st = cloneDeep(activeStyle);
+				let active;
+				const latestActiveStyle = latestPropsRef.current.activeStyle;
+				if (isFunction(latestActiveStyle)) {
+					active = latestActiveStyle(properties);
+				} else if (isObject(latestActiveStyle)) {
+					active = { ...latestActiveStyle };
 				}
-				if (!isEmpty(st) && featureId) {
-					this.clearActive();
-					this.active = featureId;
-					const base = cloneDeep(baseStyle(properties));
-					const active = extend(base, st);
-					this.setFeatureStyle(featureId, active);
+				if (active && Object.keys(active).length && featureId !== undefined && featureId !== null) {
+					clearActive();
+					activeRef.current = featureId;
+					const activeStyleValue = { ...baseStyle(properties), ...active };
+					setFeatureStyle(featureId, activeStyleValue);
 				}
 			})
-			.on('dblclick', (e) => {
-				this._propagateEvent(onDblclick, e);
-				this.clearActive();
+			.on('dblclick', (event) => {
+				propagateEvent('dblclick', latestPropsRef.current.onDblclick, event);
+				clearActive();
 			})
-			.on('contextmenu', (e) => {
-				this._propagateEvent(onContextmenu, e);
-				this.clearActive();
+			.on('contextmenu', (event) => {
+				propagateEvent('contextmenu', latestPropsRef.current.onContextmenu, event);
+				clearActive();
 			});
-	}
 
-	componentDidMount() {
-		const {
-			layerContainer
-		} = this.props.leaflet || this.context;
-		const {
-			tooltipClassName = '',
-			tooltip = null,
-			popup = null
-		} = this.props;
-		this.leafletElement.addTo(layerContainer);
-		// bind tooltip
+		layerRef.current = layer;
+		layerConfigurationRef.current = layerConfiguration;
+		layerMapRef.current = map;
+		map.addLayer(layer);
+
 		if (tooltip) {
-			this.leafletElement.bindTooltip((layer) => {
-				if (isFunction(tooltip)) {
-					return tooltip(layer);
-				} else if (isString(tooltip) && has(layer.properties, tooltip)) {
-					return String(layer.properties[tooltip]);
-				} else if (isString(tooltip)) {
-					return tooltip;
-				}
-				return '';
-			}, {
+			layer.on('mouseover', (event) => {
+				layer.setTooltipContent(getFeatureContent(tooltip, event.layer));
+			});
+			layer.bindTooltip('', {
 				sticky: true,
 				direction: 'auto',
 				className: tooltipClassName
 			});
 		}
-		// bind popup
-		// don't need all that extra logic, just make popup match the vector grid options.
-		// TODO add the ability to pass through popup options
+
 		if (popup) {
-			// create a popup and bind it?
-			// const newPopup = L.popup().setContent(popup);
-			this.leafletElement.bindPopup(popup);
+			layer.on('click', (event) => {
+				layer.setPopupContent(getFeatureContent(popup, event.layer));
+			});
+			layer.bindPopup('');
 		}
-	}
 
-	_getFeatureId(feature) {
-		const {
-			idField
-		} = this.props;
-		if (isFunction(idField)) {
-			return idField(feature);
-		} else if (isString(idField)) {
-			return feature.properties[idField];
-		}
-	}
+	}, [props, map]);
 
-	_propagateEvent(eventHandler, e) {
-		if (!isFunction(eventHandler)) return;
-		const featureId = this._getFeatureId(e.layer);
-		const feature = this.getFeature(featureId);
-		const event = cloneDeep(e);
-		const mergedEvent = merge(event.target, {
-			feature
-		});
-		eventHandler(event);
-	}
+	useEffect(() => {
+		return () => {
+			clearHighlight();
+			clearActive();
+			if (layerRef.current) {
+				map.removeLayer(layerRef.current);
+				layerRef.current = null;
+			}
+			layerConfigurationRef.current = null;
+			layerMapRef.current = null;
+		};
+	}, [map]);
 
-	setFeatureStyle(id, style) {
-		this.leafletElement.setFeatureStyle(id, style);
-	}
+	return null;
+});
 
-	resetFeatureStyle(id) {
-		this.leafletElement.resetFeatureStyle(id);
-	}
-
-	clearHighlight() {
-		if (this.highlight && this.highlight !== this.active) {
-			this.resetFeatureStyle(this.highlight);
-		}
-		this.highlight = null;
-	}
-
-	clearActive() {
-		if (this.active) {
-			this.resetFeatureStyle(this.active);
-		}
-		this.active = null;
-	}
-
-	getFeature(featureId) {
-		const {
-			data,
-			idField
-		} = this.props;
-		if (isEmpty(data) || isEmpty(data.features)) return {};
-		const feature = find(data.features, ({
-			properties
-		}) => properties[idField] === featureId);
-		return cloneDeep(feature);
-	}
-}
+export default VectorGrid;

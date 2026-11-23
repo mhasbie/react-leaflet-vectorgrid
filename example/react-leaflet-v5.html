@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>react-leaflet-vectorgrid Example for React-Leaflet v5</title>
+		<meta name="description" content="https://github.com/mhasbie/react-leaflet-vectorgrid">
+
+		<script type="importmap">
+		{
+			"imports": {
+				"react": "https://esm.sh/react@19.3.1/",
+				"react-dom/client": "https://esm.sh/react-dom@19.3.1/client",
+				"react-leaflet": "https://esm.sh/react-leaflet@5.0.0/",
+				"@react-leaflet/core": "https://esm.sh/@react-leaflet/core",
+				"leaflet": "https://esm.sh/leaflet@1.9.4/",
+				"react-leaflet-vectorgrid": "https://esm.sh/react-leaflet-vectorgrid@3.0.0/"
+			}
+		}
+		</script>
+
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" rel="stylesheet">
+		<style>
+			body {
+				font-family: Arial, Helvetica, sans-serif;
+				margin: 1rem;
+			}
+			.leaflet-container {
+				width: 100%;
+				height: calc(100vh - 8rem);
+				min-height: 360px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container"></div>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.28.4/babel.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet-src.js"></script>
+		<script src="./data.js"></script>
+		<script type="text/babel" data-type="module">
+			import React, { StrictMode } from 'react';
+			import { createRoot } from 'react-dom/client';
+			import { MapContainer, TileLayer } from 'react-leaflet';
+			import VectorGrid from 'react-leaflet-vectorgrid';
+
+			function VectorGridExample() {
+				const options = {
+					type: 'slicer',
+					data: window.data,
+					idField: 'name',
+					tooltip: 'name',
+					popup: (layer) => `<strong>${layer.properties.name}</strong>`,
+					style: {
+						weight: 0.5,
+						opacity: 1,
+						color: '#ffffff',
+						fillColor: '#390870',
+						fillOpacity: 0.6,
+						fill: true,
+						stroke: true
+					},
+					hoverStyle: {
+						fillOpacity: 0.9
+					},
+					activeStyle: {
+						fillOpacity: 1
+					}
+				};
+
+				return (
+					<StrictMode>
+						<div>
+							<h3>react-leaflet-vectorgrid</h3>
+							<MapContainer center={[20, 0]} zoom={2} minZoom={2} maxZoom={8}>
+								<TileLayer
+									attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+									url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+								/>
+								<VectorGrid {...options} onClick={(event) => console.log('Selected feature:', event.feature)} />
+							</MapContainer>
+						</div>
+					</StrictMode>
+				);
+			}
+
+			createRoot(document.getElementById('container')).render(<VectorGridExample />);
+		</script>
+	</body>
+</html>

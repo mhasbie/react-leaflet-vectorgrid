@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Standalone debug page for react-leaflet-vectorgrid">
+		<meta name="author" content="M. Hasbie">
+		<title>react-leaflet-vectorgrid Debug Page</title>
+
+		<script type="importmap">
+		{
+			"imports": {
+				"react": "https://esm.sh/react@19.3.1/",
+				"react-dom/client": "https://esm.sh/react-dom@19.3.1/client",
+				"react-leaflet": "https://esm.sh/react-leaflet@5.0.0/",
+				"@react-leaflet/core": "https://esm.sh/@react-leaflet/core",
+				"leaflet": "https://esm.sh/leaflet@1.9.4/",
+				"leaflet.vectorgrid": "https://esm.sh/leaflet.vectorgrid@1.3.0"
+			}
+		}
+		</script>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" rel="stylesheet">
+		<style>
+			body {
+				padding-top: 56px;
+			}
+
+			.leaflet-container {
+				height: min(68vh, 640px);
+				min-height: 380px;
+			}
+
+			#event-log {
+				max-height: 300px;
+				overflow-y: auto;
+			}
+
+			#event-log li {
+				overflow-wrap: anywhere;
+			}
+		</style>
+	</head>
+	<body>
+		<nav class="navbar navbar-dark bg-dark fixed-top">
+			<div class="container">
+				<a class="navbar-brand" href="../docs/index.html">react-leaflet-vectorgrid</a>
+				<span class="navbar-text">Static debug page</span>
+			</div>
+		</nav>
+
+		<header class="bg-dark text-white py-4 mb-4">
+			<div class="container">
+				<h1 class="h2">VectorGrid layer debug</h1>
+				<p class="mb-0 text-white-50">
+					Standalone Leaflet test harness. Change the slicer options, apply them, and inspect
+					<code class="text-white">click</code>,
+					<code class="text-white">mouseover</code>, and
+					<code class="text-white">mouseout</code> events below.
+				</p>
+			</div>
+		</header>
+
+		<main class="container pb-5">
+			<div class="row">
+				<section class="col-lg-8 mb-4" aria-label="Map">
+					<div id="root" class="border rounded" aria-label="Interactive VectorGrid map"></div>
+					<p class="small text-muted mt-2 mb-0">
+						Hover, click, double-click, or right-click a country to see layer event details.
+					</p>
+				</section>
+
+				<section class="col-lg-4 mb-4" aria-labelledby="options-heading">
+					<div class="card">
+						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-center">
+								<h2 id="options-heading" class="h5 mb-0">Layer options</h2>
+								<button id="reset-options" type="button" class="btn btn-sm btn-outline-secondary">
+									Reset
+								</button>
+							</div>
+							<hr>
+							<form id="options-form">
+								<div class="form-row">
+									<div class="form-group col">
+										<label for="stroke">Stroke color</label>
+										<input class="form-control" id="stroke" name="stroke" type="color" value="#ffffff">
+									</div>
+									<div class="form-group col">
+										<label for="fillColor">Fill color</label>
+										<input class="form-control" id="fillColor" name="fillColor" type="color" value="#390870">
+									</div>
+								</div>
+								<div class="form-row">
+									<div class="form-group col">
+										<label for="weight">Stroke width</label>
+										<input class="form-control" id="weight" name="weight" type="number" min="0" max="10" step="0.5" value="0.5">
+									</div>
+									<div class="form-group col">
+										<label for="opacity">Stroke opacity</label>
+										<input class="form-control" id="opacity" name="opacity" type="number" min="0" max="1" step="0.1" value="1">
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="fillOpacity">Fill opacity: <span id="fill-opacity-value">0.6</span></label>
+									<input class="form-control" id="fillOpacity" name="fillOpacity" type="range" min="0" max="1" step="0.1" value="0.6">
+								</div>
+								<div class="form-group">
+									<label for="hoverFillOpacity">Hover fill opacity</label>
+									<input class="form-control" id="hoverFillOpacity" name="hoverFillOpacity" type="number" min="0" max="1" step="0.1" value="0.9">
+								</div>
+								<div class="form-group">
+									<label for="activeFillOpacity">Active fill opacity</label>
+									<input class="form-control" id="activeFillOpacity" name="activeFillOpacity" type="number" min="0" max="1" step="0.1" value="1">
+								</div>
+								<div class="form-group">
+									<label for="zIndex">Z-index</label>
+									<input class="form-control" id="zIndex" name="zIndex" type="number" min="0" step="1" value="401">
+								</div>
+								<div class="form-check mb-2">
+									<input class="form-check-input" id="interactive" name="interactive" type="checkbox" checked>
+									<label class="form-check-label" for="interactive">Interactive</label>
+								</div>
+								<div class="form-check mb-2">
+									<input class="form-check-input" id="showTooltip" name="showTooltip" type="checkbox" checked>
+									<label class="form-check-label" for="showTooltip">Show country tooltips</label>
+								</div>
+								<div class="form-check mb-3">
+									<input class="form-check-input" id="showPopup" name="showPopup" type="checkbox" checked>
+									<label class="form-check-label" for="showPopup">Show country popups</label>
+								</div>
+								<button type="submit" class="btn btn-primary btn-block">Apply options</button>
+								<p class="small text-muted mt-2 mb-0">
+									Applying options recreates the layer and clears existing event highlights.
+								</p>
+							</form>
+						</div>
+					</div>
+				</section>
+			</div>
+
+			<section class="card" aria-labelledby="events-heading">
+				<div class="card-body">
+					<div class="d-flex justify-content-between align-items-center">
+						<h2 id="events-heading" class="h5 mb-0">Event log</h2>
+						<button id="clear-log" type="button" class="btn btn-sm btn-outline-secondary">
+							Clear
+						</button>
+					</div>
+					<p class="small text-muted mt-2">VectorGrid events appear here as JSON.</p>
+					<ol id="event-log" class="list-group list-group-flush" aria-live="polite"></ol>
+				</div>
+			</section>
+		</main>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.28.4/babel.min.js"></script>
+		<script src="./data.js"></script>
+		<script type="text/babel" data-type="module">
+			import React, { StrictMode, useEffect, useState } from 'react';
+			import { createRoot } from 'react-dom/client';
+			import { MapContainer, TileLayer } from 'react-leaflet';
+			import VectorGrid from '../src/VectorGrid.js';
+
+			const defaults = {
+				stroke: '#ffffff',
+				fillColor: '#390870',
+				weight: 0.5,
+				opacity: 1,
+				fillOpacity: 0.6,
+				hoverFillOpacity: 0.9,
+				activeFillOpacity: 1,
+				zIndex: 401,
+				interactive: true,
+				showTooltip: true,
+				showPopup: true
+			};
+
+			const countryPopup = (layer) => {
+				const properties = layer?.properties || layer?.feature?.properties;
+				return `<strong>${properties?.name || 'Unknown feature'}</strong>`;
+			};
+
+			function DebugApp() {
+				const [applied, setApplied] = useState(defaults);
+				const [events, setEvents] = useState([]);
+
+				useEffect(() => {
+					const form = document.getElementById('options-form');
+					const fillOpacity = document.getElementById('fillOpacity');
+					const fillOpacityValue = document.getElementById('fill-opacity-value');
+					const onFillOpacity = () => {
+						fillOpacityValue.textContent = fillOpacity.value;
+					};
+					const readOptions = () => {
+						const values = new FormData(form);
+						return {
+							stroke: values.get('stroke'),
+							fillColor: values.get('fillColor'),
+							weight: Number(values.get('weight')),
+							opacity: Number(values.get('opacity')),
+							fillOpacity: Number(values.get('fillOpacity')),
+							hoverFillOpacity: Number(values.get('hoverFillOpacity')),
+							activeFillOpacity: Number(values.get('activeFillOpacity')),
+							zIndex: Number(values.get('zIndex')),
+							interactive: values.get('interactive') === 'on',
+							showTooltip: values.get('showTooltip') === 'on',
+							showPopup: values.get('showPopup') === 'on'
+						};
+					};
+					const onSubmit = (event) => {
+						event.preventDefault();
+						const next = readOptions();
+						setApplied(next);
+					};
+					const onReset = () => {
+						form.reset();
+						fillOpacityValue.textContent = defaults.fillOpacity;
+						setApplied(defaults);
+						setEvents([]);
+					};
+					const onClear = () => setEvents([]);
+
+					fillOpacity.addEventListener('input', onFillOpacity);
+					form.addEventListener('submit', onSubmit);
+					document.getElementById('reset-options').addEventListener('click', onReset);
+					document.getElementById('clear-log').addEventListener('click', onClear);
+					return () => {
+						fillOpacity.removeEventListener('input', onFillOpacity);
+						form.removeEventListener('submit', onSubmit);
+						document.getElementById('reset-options').removeEventListener('click', onReset);
+						document.getElementById('clear-log').removeEventListener('click', onClear);
+					};
+				}, []);
+
+				useEffect(() => {
+					const log = document.getElementById('event-log');
+					log.replaceChildren();
+					events.forEach((entry) => {
+						const item = document.createElement('li');
+						item.className = 'list-group-item small';
+						item.textContent = `${entry.time} - ${entry.name}: ${JSON.stringify(entry.detail)}`;
+						log.appendChild(item);
+					});
+				}, [events]);
+
+				const logEvent = (name, event) => {
+					const properties = event.feature?.properties || event.layer?.properties || null;
+					setEvents((current) => [{
+						time: new Date().toLocaleTimeString(),
+						name,
+						detail: {
+							latlng: event.latlng ? {
+								lat: event.latlng.lat,
+								lng: event.latlng.lng
+							} : undefined,
+							properties
+						}
+					}, ...current]);
+				};
+
+				return (
+					<StrictMode>
+						<MapContainer
+							center={[20, 0]}
+							zoom={2}
+							minZoom={2}
+							maxZoom={8}
+						>
+							<TileLayer
+								attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+								url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+							/>
+							<VectorGrid
+								key={JSON.stringify(applied)}
+								type="slicer"
+								data={window.data}
+								idField="name"
+								zIndex={applied.zIndex}
+								interactive={applied.interactive}
+								tooltip={applied.showTooltip ? 'name' : null}
+								popup={applied.showPopup ? countryPopup : null}
+								style={{
+									weight: applied.weight,
+									opacity: applied.opacity,
+									color: applied.stroke,
+									fillColor: applied.fillColor,
+									fillOpacity: applied.fillOpacity,
+									fill: true,
+									stroke: true
+								}}
+								hoverStyle={{ fillOpacity: applied.hoverFillOpacity }}
+								activeStyle={{ fillOpacity: applied.activeFillOpacity }}
+								onMouseover={(event) => logEvent('mouseover', event)}
+								onMouseout={(event) => logEvent('mouseout', event)}
+								onClick={(event) => logEvent('click', event)}
+								onDblclick={(event) => logEvent('dblclick', event)}
+								onContextmenu={(event) => logEvent('contextmenu', event)}
+							/>
+						</MapContainer>
+					</StrictMode>
+				);
+			}
+
+			createRoot(document.getElementById('root')).render(<DebugApp />);
+		</script>
+	</body>
+</html>
