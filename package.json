@@ -22,6 +22,7 @@
         "type": "git",
         "url": "git+https://github.com/mhasbie/react-leaflet-vectorgrid.git"
     },
+    "homepage": "https://mhasbie.github.io/react-leaflet-vectorgrid/",
     "keywords": [
         "react",
         "leaflet",
