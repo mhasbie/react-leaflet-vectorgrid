@@ -2,6 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MapContainer, TileLayer } from 'react-leaflet';
 
+const defaultOptions = {
+	stroke: '#ffffff',
+	fillColor: '#390870',
+	weight: 0.5,
+	opacity: 1,
+	fillOpacity: 0.6,
+	hoverFillOpacity: 0.9,
+	activeFillOpacity: 1,
+	zIndex: 401,
+	interactive: true,
+	showTooltip: true,
+	showPopup: true
+};
+
+const countryPopup = (layer) => {
+	const properties = layer?.properties || layer?.feature?.properties;
+	return `<strong>${properties?.name || 'Unknown feature'}</strong>`;
+};
+
 const usageExample = `import { MapContainer, TileLayer } from 'react-leaflet';
 import VectorGrid from 'react-leaflet-vectorgrid';
 
@@ -28,10 +47,9 @@ const options = {
 function App() {
 	const [VectorGrid, setVectorGrid] = useState(null);
 	const [vectorGridLoadError, setVectorGridLoadError] = useState('');
-	const [fillColor, setFillColor] = useState('#390870');
-	const [fillOpacity, setFillOpacity] = useState(0.6);
-	const [showTooltips, setShowTooltips] = useState(true);
-	const [selectedFeature, setSelectedFeature] = useState('Click a country to see its name.');
+	const [options, setOptions] = useState(defaultOptions);
+	const [appliedOptions, setAppliedOptions] = useState(defaultOptions);
+	const [events, setEvents] = useState([]);
 
 	useEffect(() => {
 		import('react-leaflet-vectorgrid')
@@ -42,11 +60,40 @@ function App() {
 			});
 	}, []);
 
+	const updateOption = (event) => {
+		const { name, type, value, checked } = event.target;
+		const nextValue = type === 'checkbox'
+			? checked
+			: type === 'number' || type === 'range'
+				? Number(value)
+				: value;
+		setOptions((current) => ({ ...current, [name]: nextValue }));
+	};
+
+	const applyOptions = (event) => {
+		event.preventDefault();
+		setAppliedOptions({ ...options });
+	};
+
 	const resetOptions = () => {
-		setFillColor('#390870');
-		setFillOpacity(0.6);
-		setShowTooltips(true);
-		setSelectedFeature('Click a country to see its name.');
+		setOptions(defaultOptions);
+		setAppliedOptions(defaultOptions);
+		setEvents([]);
+	};
+
+	const logEvent = (name, event) => {
+		const properties = event.feature?.properties || event.layer?.properties || null;
+		setEvents((current) => [{
+			time: new Date().toLocaleTimeString(),
+			name,
+			detail: {
+				latlng: event.latlng ? {
+					lat: event.latlng.lat,
+					lng: event.latlng.lng
+				} : undefined,
+				properties
+			}
+		}, ...current]);
 	};
 
 	return (
@@ -66,33 +113,39 @@ function App() {
 										attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 										url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 									/>
-									{VectorGrid && <VectorGrid
-										type="slicer"
-										data={window.data}
-										idField="name"
-										tooltip={showTooltips ? 'name' : null}
-										popup={(layer) => `<strong>${layer.properties.name}</strong>`}
-										style={{
-											weight: 0.5,
-											opacity: 1,
-											color: '#ffffff',
-											fillColor,
-											fillOpacity,
-											fill: true,
-											stroke: true
-										}}
-										hoverStyle={{ fillOpacity: 0.9 }}
-										activeStyle={{ fillOpacity: 1 }}
-										onClick={(event) => {
-											const name = event.feature && event.feature.properties
-												? event.feature.properties.name
-												: 'Unknown feature';
-											setSelectedFeature(`Selected: ${name}`);
-										}}
-									/>}
+									{VectorGrid && (
+										<VectorGrid
+											key={JSON.stringify(appliedOptions)}
+											type="slicer"
+											data={window.data}
+											idField="name"
+											zIndex={appliedOptions.zIndex}
+											interactive={appliedOptions.interactive}
+											tooltip={appliedOptions.showTooltip ? 'name' : null}
+											popup={appliedOptions.showPopup ? countryPopup : null}
+											style={{
+												weight: appliedOptions.weight,
+												opacity: appliedOptions.opacity,
+												color: appliedOptions.stroke,
+												fillColor: appliedOptions.fillColor,
+												fillOpacity: appliedOptions.fillOpacity,
+												fill: true,
+												stroke: true
+											}}
+											hoverStyle={{ fillOpacity: appliedOptions.hoverFillOpacity }}
+											activeStyle={{ fillOpacity: appliedOptions.activeFillOpacity }}
+											onMouseover={(event) => logEvent('mouseover', event)}
+											onMouseout={(event) => logEvent('mouseout', event)}
+											onClick={(event) => logEvent('click', event)}
+											onDblclick={(event) => logEvent('dblclick', event)}
+											onContextmenu={(event) => logEvent('contextmenu', event)}
+										/>
+									)}
 								</MapContainer>
 							</div>
-							<p className="mb-0 mt-3" aria-live="polite">{selectedFeature}</p>
+							<p className="small text-muted mt-3 mb-0">
+								Hover, click, double-click, or right-click a country to see layer event details.
+							</p>
 						</div>
 					</div>
 				</div>
@@ -106,40 +159,83 @@ function App() {
 								</button>
 							</div>
 							<hr />
-							<div className="form-group">
-								<label htmlFor="fillColor">Fill color</label>
-								<input
-									className="form-control"
-									id="fillColor"
-									type="color"
-									value={fillColor}
-									onChange={(event) => setFillColor(event.target.value)}
-								/>
+							<form onSubmit={applyOptions}>
+								<div className="form-row">
+									<div className="form-group col">
+										<label htmlFor="stroke">Stroke color</label>
+										<input className="form-control" id="stroke" name="stroke" type="color" value={options.stroke} onChange={updateOption} />
+									</div>
+									<div className="form-group col">
+										<label htmlFor="fillColor">Fill color</label>
+										<input className="form-control" id="fillColor" name="fillColor" type="color" value={options.fillColor} onChange={updateOption} />
+									</div>
+								</div>
+								<div className="form-row">
+									<div className="form-group col">
+										<label htmlFor="weight">Stroke width</label>
+										<input className="form-control" id="weight" name="weight" type="number" min="0" max="10" step="0.5" value={options.weight} onChange={updateOption} />
+									</div>
+									<div className="form-group col">
+										<label htmlFor="opacity">Stroke opacity</label>
+										<input className="form-control" id="opacity" name="opacity" type="number" min="0" max="1" step="0.1" value={options.opacity} onChange={updateOption} />
+									</div>
+								</div>
+								<div className="form-group">
+									<label htmlFor="fillOpacity">Fill opacity: <span>{options.fillOpacity}</span></label>
+									<input className="form-control" id="fillOpacity" name="fillOpacity" type="range" min="0" max="1" step="0.1" value={options.fillOpacity} onChange={updateOption} />
+								</div>
+								<div className="form-group">
+									<label htmlFor="hoverFillOpacity">Hover fill opacity</label>
+									<input className="form-control" id="hoverFillOpacity" name="hoverFillOpacity" type="number" min="0" max="1" step="0.1" value={options.hoverFillOpacity} onChange={updateOption} />
+								</div>
+								<div className="form-group">
+									<label htmlFor="activeFillOpacity">Active fill opacity</label>
+									<input className="form-control" id="activeFillOpacity" name="activeFillOpacity" type="number" min="0" max="1" step="0.1" value={options.activeFillOpacity} onChange={updateOption} />
+								</div>
+								<div className="form-group">
+									<label htmlFor="zIndex">Z-index</label>
+									<input className="form-control" id="zIndex" name="zIndex" type="number" min="0" step="1" value={options.zIndex} onChange={updateOption} />
+								</div>
+								<div className="form-group form-check">
+									<input className="form-check-input" id="interactive" name="interactive" type="checkbox" checked={options.interactive} onChange={updateOption} />
+									<label className="form-check-label" htmlFor="interactive">Interactive</label>
+								</div>
+								<div className="form-group form-check">
+									<input className="form-check-input" id="showTooltip" name="showTooltip" type="checkbox" checked={options.showTooltip} onChange={updateOption} />
+									<label className="form-check-label" htmlFor="showTooltip">Show country tooltips</label>
+								</div>
+								<div className="form-group form-check">
+									<input className="form-check-input" id="showPopup" name="showPopup" type="checkbox" checked={options.showPopup} onChange={updateOption} />
+									<label className="form-check-label" htmlFor="showPopup">Show country popups</label>
+								</div>
+								<button type="submit" className="btn btn-primary btn-block">Apply options</button>
+								<p className="small text-muted mt-2 mb-0">
+									Applying options recreates the layer and clears existing event highlights.
+								</p>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div className="row">
+				<div className="col-md-12 mb-4">
+					<div className="card">
+						<div className="card-body">
+							<div className="d-flex justify-content-between align-items-center">
+								<h4 className="mb-0">Event log</h4>
+								<button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setEvents([])}>
+									Clear
+								</button>
 							</div>
-							<div className="form-group">
-								<label htmlFor="fillOpacity">Fill opacity: {Number(fillOpacity).toFixed(1)}</label>
-								<input
-									className="form-control"
-									id="fillOpacity"
-									type="range"
-									min="0.1"
-									max="1"
-									step="0.1"
-									value={fillOpacity}
-									onChange={(event) => setFillOpacity(Number(event.target.value))}
-								/>
-							</div>
-							<div className="form-group form-check">
-								<input
-									className="form-check-input"
-									id="showTooltips"
-									type="checkbox"
-									checked={showTooltips}
-									onChange={(event) => setShowTooltips(event.target.checked)}
-								/>
-								<label className="form-check-label" htmlFor="showTooltips">Show country tooltips</label>
-							</div>
-							<p className="text-muted mb-0">Click a country to select it; hover to preview the highlight style.</p>
+							<p className="small text-muted mt-2">VectorGrid events appear here as JSON.</p>
+							<ol className="list-group list-group-flush" style={{ maxHeight: '300px', overflowY: 'auto' }} aria-live="polite">
+								{events.map((entry, index) => (
+									<li className="list-group-item small" key={`${entry.time}-${index}`}>
+										{entry.time} - {entry.name}: {JSON.stringify(entry.detail)}
+									</li>
+								))}
+							</ol>
 						</div>
 					</div>
 				</div>
@@ -153,16 +249,11 @@ function App() {
 							<hr />
 							<section className="mb-4">
 								<h5>react-leaflet-v5</h5>
-								<iframe
-									title="react-leaflet-vectorgrid for react-leaflet v5"
-									height="420"
-									style={{ width: '100%' }}
-									scrolling="no"
-									src="https://codepen.io/m_hasbie/embed/GgmMPGx?default-tab=html%2Cresult"
-									frameBorder="no"
-									loading="lazy"
-									allowFullScreen
-								/>
+								<iframe height="300" style={{ width: '100%' }} scrolling="no" title="react-leaflet-vectorgrid for react-leaflet V5 example" src="https://codepen.io/editor/m_hasbie/embed/01a20662-b67f-77b3-8ce7-137c30ba183d?default-tab=html%2Cresult" frameBorder="no" loading="lazy" allowTransparency="true">
+								See the Pen <a href="https://codepen.io/editor/m_hasbie/pen/01a20662-b67f-77b3-8ce7-137c30ba183d">
+								react-leaflet-vectorgrid for react-leaflet V5 example</a> by M. Hasbie (<a href="https://codepen.io/m_hasbie">@m_hasbie</a>)
+								on <a href="https://codepen.io">CodePen</a>.
+								</iframe>
 							</section>
 							<section className="mb-4">
 								<h5>react-leaflet-v2</h5>
