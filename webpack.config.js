@@ -49,14 +49,6 @@ module.exports = {
                     presets: ['@babel/preset-env', '@babel/preset-react'],
                     plugins: ['@babel/plugin-transform-class-properties']
                 }
-			},
-			{
-				test: /\.css$/,
-				exclude: /node_modules/,
-				use: [
-					{ loader: 'style-loader' },
-					{ loader: 'css-loader' }
-				]
 			}
 		]
 	}
