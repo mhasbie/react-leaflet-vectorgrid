@@ -92,6 +92,7 @@ Option          | Type      | Default | Description
 `activeStyle`   | `Object`  	 | `undefined`    | Style to apply to features on `click` event. Can be use to show user selection when feature is clicked. Double click to clear selection.
 `zIndex`   | `Integer`   | `undefined`    | Sets the `VectorGrid` z-index.
 `interactive`   | `Boolean`   | `true`    | Whether `VectorGrid` fires `Interactive` Layer events.
+`tolerance`     | `Number`    | `0.000001` | Slicer simplification tolerance. Lower values retain more polyline and polygon detail. Only applies to `type="slicer"`.
 `onClick` |  `Function`     | `undefined`    | Listens to `VectorGrid` `click` events. `interactive` option must be set to `true`.
 `onMouseover` |  `Function`     | `undefined`    | Listens to `VectorGrid` `mouseover` events. `interactive` option must be set to `true`.
 `onMouseout` |  `Function`     | `undefined`    | Listens to `VectorGrid` `mouseout` events. `interactive` option must be set to `true`.

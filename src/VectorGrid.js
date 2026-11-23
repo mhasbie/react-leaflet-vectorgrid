@@ -156,6 +156,7 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 			subdomains,
 			accessKey,
 			accessToken,
+			tolerance = 0.000001,
 			type = 'slicer',
 			interactive = true,
 			tooltip = null,
@@ -181,6 +182,7 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 			subdomains,
 			accessKey,
 			accessToken,
+			tolerance,
 			type,
 			interactive,
 			tooltip,
@@ -252,6 +254,7 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 				rendererFactory: L.svg.tile,
 				maxZoom: maxZoom ?? map.getMaxZoom(),
 				minZoom: minZoom ?? map.getMinZoom(),
+				tolerance,
 				vectorTileLayerStyles: vectorTileLayerStyles || {
 					sliced: (properties, zoom) => {
 						const result = baseStyle(properties, zoom);

@@ -232,6 +232,7 @@ function App() {
 										<tr><td><code>url</code></td><td>string</td><td>Vector tile URL template when using <code>protobuf</code>.</td></tr>
 										<tr><td><code>idField</code></td><td>string or function</td><td>Unique feature property used for styling and events.</td></tr>
 										<tr><td><code>style</code></td><td>object or function</td><td>Default style for vector features.</td></tr>
+										<tr><td><code>tolerance</code></td><td>number</td><td>Slicer simplification tolerance (default <code>0.000001</code>). Lower values retain more GeoJSON/TopoJSON detail.</td></tr>
 										<tr><td><code>hoverStyle</code>, <code>activeStyle</code></td><td>object or function</td><td>Styles applied while hovering or after selecting a feature.</td></tr>
 										<tr><td><code>tooltip</code>, <code>popup</code></td><td>string or function</td><td>Feature tooltip property or popup content.</td></tr>
 										<tr><td><code>onClick</code>, <code>onMouseover</code>, <code>onMouseout</code></td><td>function</td><td>Handlers for interactive vector feature events.</td></tr>

@@ -81,6 +81,33 @@ describe('VectorGrid', () => {
 		expect(removeLayer).toHaveBeenCalledWith(layer);
 	});
 
+	it('forwards slicer tolerance and recreates the layer when it changes', () => {
+		const firstLayer = createVectorGridLayer();
+		const secondLayer = createVectorGridLayer();
+		const slicer = jest.spyOn(L.vectorGrid, 'slicer')
+			.mockReturnValueOnce(firstLayer)
+			.mockReturnValueOnce(secondLayer);
+		const renderMap = (tolerance) => (
+			<MapContainer {...mapOptions}>
+				<VectorGrid data={data} type="slicer" tolerance={tolerance} />
+			</MapContainer>
+		);
+
+		const { rerender } = render(renderMap(undefined));
+		rerender(renderMap(3));
+
+		expect(slicer).toHaveBeenNthCalledWith(
+			1,
+			data,
+			expect.objectContaining({ tolerance: 0.000001 })
+		);
+		expect(slicer).toHaveBeenNthCalledWith(
+			2,
+			data,
+			expect.objectContaining({ tolerance: 3 })
+		);
+	});
+
 	it('creates a protobuf VectorGrid with tile options', () => {
 		const layer = createVectorGridLayer();
 		const protobuf = jest.spyOn(L.vectorGrid, 'protobuf').mockReturnValue(layer);
@@ -93,11 +120,13 @@ describe('VectorGrid', () => {
 					subdomains="abcd"
 					accessKey="key"
 					accessToken="token"
+					tolerance={0.000001}
 					vectorTileLayerStyles={{ roads: { color: 'red' } }}
 				/>
 			</MapContainer>
 		);
 
+		const protobufOptions = protobuf.mock.calls[0][1];
 		expect(protobuf).toHaveBeenCalledWith(
 			'https://{s}.example/{z}/{x}/{y}.pbf',
 			expect.objectContaining({
@@ -107,6 +136,7 @@ describe('VectorGrid', () => {
 				vectorTileLayerStyles: { roads: { color: 'red' } }
 			})
 		);
+		expect(protobufOptions.tolerance).toBeUndefined();
 	});
 
 	it('disables feature pointer events when interactive is false', () => {
