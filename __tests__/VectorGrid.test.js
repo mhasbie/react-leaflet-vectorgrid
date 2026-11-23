@@ -109,6 +109,37 @@ describe('VectorGrid', () => {
 		);
 	});
 
+	it('disables feature pointer events when interactive is false', () => {
+		const createdFeature = {
+			options: {},
+			render: jest.fn(function () {
+				this._path = { style: {} };
+				return this;
+			})
+		};
+		const layer = createVectorGridLayer();
+		layer._createLayer = jest.fn(() => createdFeature);
+		jest.spyOn(L.vectorGrid, 'slicer').mockReturnValue(layer);
+
+		render(
+			<MapContainer {...mapOptions}>
+				<VectorGrid
+					data={data}
+					type="slicer"
+					interactive={false}
+					idField="name"
+				/>
+			</MapContainer>
+		);
+
+		const feature = layer._createLayer({ type: 3 }, {}, {});
+		feature.render({}, {});
+
+		expect(feature.options.interactive).toBe(false);
+		expect(feature.options.bubblingMouseEvents).toBe(false);
+		expect(feature._path.style.pointerEvents).toBe('none');
+	});
+
 	it('reports when the protobuf plugin is not registered', () => {
 		const vectorGrid = L.vectorGrid;
 		L.vectorGrid = undefined;

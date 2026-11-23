@@ -22,3 +22,20 @@ test('selects a feature when it is clicked', async ({ page }) => {
 		.toHaveText('Selected: Browser test polygon');
 	await expect(page.locator('.leaflet-interactive').first()).toBeVisible();
 });
+
+test('drags the map over a non-interactive vector grid', async ({ page }) => {
+	await page.goto('/?interactive=false');
+	await expect(page.getByTestId('map-center')).toHaveText('0.00,0.00');
+
+	const map = page.locator('.leaflet-container');
+	const bounds = await map.boundingBox();
+	await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+	await page.mouse.down();
+	await page.mouse.move(bounds.x + bounds.width / 2 - 150, bounds.y + bounds.height / 2, { steps: 10 });
+	await page.mouse.up();
+
+	await expect.poll(() => page.evaluate(() => {
+		const center = window.fixtureMap?.getCenter();
+		return center ? `${center.lat.toFixed(2)},${center.lng.toFixed(2)}` : 'unknown';
+	})).not.toBe('0.00,0.00');
+});

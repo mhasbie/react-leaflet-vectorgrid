@@ -25,14 +25,24 @@ const data = {
 
 function Fixture() {
 	const [selectedFeature, setSelectedFeature] = useState('No feature selected');
+	const interactive = new URLSearchParams(window.location.search).get('interactive') !== 'false';
 
 	return (
 		<main>
 			<h1>VectorGrid fixture</h1>
-			<MapContainer center={[0, 0]} zoom={3} minZoom={1} maxZoom={8}>
+			<MapContainer
+				center={[0, 0]}
+				zoom={3}
+				minZoom={1}
+				maxZoom={8}
+				ref={(map) => {
+					if (map) window.fixtureMap = map;
+				}}
+			>
 				<VectorGrid
 					data={data}
 					idField="name"
+					interactive={interactive}
 					style={{ color: '#222222', fillColor: '#336699', fillOpacity: 0.6 }}
 					onClick={(event) => {
 						setSelectedFeature(`Selected: ${event.feature.properties.name}`);
@@ -42,6 +52,7 @@ function Fixture() {
 			<p id="selected-feature" data-testid="selected-feature" aria-live="polite">
 				{selectedFeature}
 			</p>
+			<p data-testid="map-center">0.00,0.00</p>
 		</main>
 	);
 }

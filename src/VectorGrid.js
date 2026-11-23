@@ -38,12 +38,24 @@ function assertProtobufSupport() {
 	}
 }
 
-function patchVectorGridLayer(layer) {
+function patchVectorGridLayer(layer, interactive) {
 	const originalCreateLayer = layer._createLayer;
 	layer._createLayer = function (feature, pxPerExtent, layerStyle) {
 		const createdLayer = originalCreateLayer.call(this, feature, pxPerExtent, layerStyle);
 		if (feature.type === 1) {
 			createdLayer.getLatLng = null;
+		}
+		if (!interactive) {
+			createdLayer.options.interactive = false;
+			createdLayer.options.bubblingMouseEvents = false;
+			const originalRender = createdLayer.render;
+			createdLayer.render = function (renderer, style) {
+				const result = originalRender.call(this, renderer, style);
+				if (this._path) {
+					this._path.style.pointerEvents = 'none';
+				}
+				return result;
+			};
 		}
 		return createdLayer;
 	};
@@ -252,7 +264,7 @@ const VectorGrid = forwardRef(function VectorGrid(props, ref) {
 			});
 		}
 
-		patchVectorGridLayer(layer);
+		patchVectorGridLayer(layer, interactive);
 
 		layer
 			.on('mouseover', (event) => {
