@@ -18,6 +18,10 @@ Display gridded vector data (sliced [GeoJSON](http://geojson.org/), [TopoJSON](h
 
 [`Demo Page`](https://mhasbie.github.io/react-leaflet-vectorgrid/)
 
+[Standalone React-Leaflet v5 example](./example/react-leaflet-v5.html)
+
+Serve the repository over HTTP to run the standalone example in a browser.
+
 
 
 ## Installation

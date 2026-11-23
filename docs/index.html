@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="A live demo of react-leaflet-vectorgrid">
+		<meta name="author" content="M. Hasbie">
+
+		<title>react-leaflet-vectorgrid Demo Page</title>
+
+		<script type="importmap">
+		{
+			"imports": {
+				"react": "https://esm.sh/react@19.3.1/",
+				"react-dom/client": "https://esm.sh/react-dom@19.3.1/client",
+				"react-leaflet": "https://esm.sh/react-leaflet@5.0.0/",
+				"@react-leaflet/core": "https://esm.sh/@react-leaflet/core",
+				"leaflet": "https://esm.sh/leaflet@1.9.4/",
+				"react-leaflet-vectorgrid": "https://esm.sh/react-leaflet-vectorgrid@3.0.0/"
+			}
+		}
+		</script>
+
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link href="css/business-frontpage.css" rel="stylesheet">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" rel="stylesheet">
+	</head>
+	<body>
+		<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+			<div class="container">
+				<a class="navbar-brand" href="#">react-leaflet-vectorgrid</a>
+				<div class="navbar-nav ml-auto">
+					<a class="nav-link" href="https://github.com/mhasbie/react-leaflet-vectorgrid">GitHub</a>
+					<a class="nav-link" href="https://www.npmjs.com/package/react-leaflet-vectorgrid">npm</a>
+				</div>
+			</div>
+		</nav>
+
+		<header class="bg-dark mb-4">
+			<div class="container py-5">
+				<h1 class="display-4 text-white mb-2">react-leaflet-vectorgrid</h1>
+				<p class="lead mb-4 text-white-50">
+					React wrapper of <a href="https://github.com/Leaflet/Leaflet.VectorGrid">Leaflet.VectorGrid</a>
+					for <a href="https://github.com/PaulLeCam/react-leaflet">react-leaflet</a>.
+					Display gridded GeoJSON, TopoJSON, and protobuf vector tile data.
+				</p>
+				<div class="btn-group">
+					<a class="btn btn-outline-light" href="https://github.com/mhasbie/react-leaflet-vectorgrid" title="View on GitHub">
+						<i class="fab fa-github"></i> GitHub
+					</a>
+					<a class="btn btn-outline-light" href="https://www.npmjs.com/package/react-leaflet-vectorgrid" title="View on npm">
+						<i class="fab fa-npm"></i> npm
+					</a>
+				</div>
+			</div>
+		</header>
+
+		<main class="container">
+			<div id="container"></div>
+		</main>
+
+		<footer class="py-5 mt-5 bg-dark">
+			<div class="container">
+				<p class="m-0 text-center text-white">&copy; M. Hasbie 2026</p>
+			</div>
+		</footer>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.28.4/babel.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet-src.js"></script>
+		<script src="./data.js"></script>
+		<script type="text/babel" data-type="module" src="App.jsx"></script>
+	</body>
+</html>
